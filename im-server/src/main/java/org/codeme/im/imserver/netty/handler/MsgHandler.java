@@ -7,6 +7,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.codeme.im.imcommon.constant.AuthStatus;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
@@ -19,8 +20,18 @@ import org.codeme.im.imserver.util.NettySocketHolder;
  * @date 2020/5/17
  */
 @Slf4j
+//@ChannelHandler.Sharable
 public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
+    private long userId;
 
+    private AuthStatus authStatus = AuthStatus.INIT;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        log.info(authStatus.toString());
+        authStatus = AuthStatus.WATING;
+    }
 
     /**
      * 取消绑定

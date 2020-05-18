@@ -28,7 +28,7 @@ public class ImServer {
     private EventLoopGroup acceptLoopGroup = new NioEventLoopGroup();
     private EventLoopGroup socketLoopGroup = new NioEventLoopGroup();
 
-    @Value("${netty.server.port}")
+    @Value("${imserver.netty.server.port}")
     private int nettyPort;
 
     /**

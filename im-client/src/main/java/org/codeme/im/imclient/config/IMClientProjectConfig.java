@@ -15,7 +15,7 @@ public class IMClientProjectConfig {
     private int nettyPort;
     @Value("${imclient.netty.server.host}")
     private String nettyHost;
-    @Value("${channel.id}")
+    @Value("${imclient.channel.id}")
     private long id;
 
 
