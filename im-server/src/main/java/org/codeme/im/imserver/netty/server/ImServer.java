@@ -9,6 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imserver.config.IMServerProjectConfig;
 import org.codeme.im.imserver.netty.initializer.HeartbeatInitializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -24,7 +25,7 @@ import java.net.InetSocketAddress;
 @Component
 @Slf4j
 public class ImServer {
-
+    @Autowired
     private IMServerProjectConfig imServerProjectConfig;
 
     private EventLoopGroup acceptLoopGroup = new NioEventLoopGroup();
