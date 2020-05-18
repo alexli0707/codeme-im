@@ -45,7 +45,7 @@ public class ImClient {
          * 启动客户端
          * 我们应该调用connect()方法而不是bind()方法。
          */
-        ChannelFuture future = bootstrap.connect(imClientProjectConfig.getHost(), imClientProjectConfig.getNettyPort()).sync();
+        ChannelFuture future = bootstrap.connect(imClientProjectConfig.getNettyHost(), imClientProjectConfig.getNettyPort()).sync();
         if (future.isSuccess()) {
             log.info("启动 Netty 成功");
         }else{

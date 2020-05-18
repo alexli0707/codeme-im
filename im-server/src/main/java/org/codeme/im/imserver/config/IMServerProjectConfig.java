@@ -1,5 +1,6 @@
 package org.codeme.im.imserver.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -10,4 +11,12 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class IMServerProjectConfig {
+
+    @Value("${imserver.netty.server.port}")
+    private int nettyPort;
+
+
+    public int getNettyPort() {
+        return nettyPort;
+    }
 }
