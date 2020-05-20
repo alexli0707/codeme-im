@@ -6,7 +6,7 @@ package org.codeme.im.imcommon.constant;
  * @author walker lee
  * @date 2020/5/18
  */
-public enum AuthStatus {
+public enum SocketAuthStatus {
     INIT, WATING, SUCCESS, FAILURE
 
 }

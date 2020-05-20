@@ -12,6 +12,7 @@
     <artifactId>im-client</artifactId>
     <properties>
         <java.version>11</java.version>
+        <dep.retrofit.version>2.6.0</dep.retrofit.version>
     </properties>
     <dependencies>
         <dependency>
@@ -42,7 +43,18 @@
             <version>${dep.lombok.version}</version>
             <scope>provided</scope>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit 请求库-->
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>${dep.retrofit.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-gson 对应retrofit的转换工具-->
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-gson</artifactId>
+            <version>${dep.retrofit.version}</version>
+        </dependency>
     </dependencies>
 
 

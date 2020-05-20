@@ -7,8 +7,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.codeme.im.imserver.netty.initializer.HeartbeatInitializer;
-import org.springframework.beans.factory.annotation.Value;
+import org.codeme.im.imserver.config.IMServerProjectProperties;
+import org.codeme.im.imserver.netty.initializer.ServerInitializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -24,12 +25,13 @@ import java.net.InetSocketAddress;
 @Component
 @Slf4j
 public class ImServer {
+    @Autowired
+    private IMServerProjectProperties imServerProjectProperties;
+
 
     private EventLoopGroup acceptLoopGroup = new NioEventLoopGroup();
     private EventLoopGroup socketLoopGroup = new NioEventLoopGroup();
 
-    @Value("${imserver.netty.server.port}")
-    private int nettyPort;
 
     /**
      * 启动 Netty
@@ -42,10 +44,10 @@ public class ImServer {
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(acceptLoopGroup, socketLoopGroup)
                 .channel(NioServerSocketChannel.class)
-                .localAddress(new InetSocketAddress(nettyPort))
+                .localAddress(new InetSocketAddress(imServerProjectProperties.getNettyPort()))
                 //保持长连接
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childHandler(new HeartbeatInitializer());
+                .childHandler(new ServerInitializer());
         //绑定并开始接受传入的连接。
         ChannelFuture future = bootstrap.bind().sync();
         if (future.isSuccess()) {

@@ -7,8 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.codeme.im.imclient.config.IMClientProjectConfig;
-import org.codeme.im.imclient.netty.initializer.CustomerHandleInitializer;
+import org.codeme.im.imclient.config.IMClientProjectProperties;
+import org.codeme.im.imclient.netty.initializer.ClientInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,12 +25,13 @@ import javax.annotation.PostConstruct;
 public class ImClient {
 
     @Autowired
-    IMClientProjectConfig imClientProjectConfig;
+    IMClientProjectProperties imClientProjectProperties;
 
     private EventLoopGroup group = new NioEventLoopGroup();
 
 
     private SocketChannel socketChannel;
+
 
 
     @PostConstruct
@@ -40,15 +41,15 @@ public class ImClient {
          * NioSocketChannel用于创建客户端通道，而不是NioServerSocketChannel。
          * 请注意，我们不像在ServerBootstrap中那样使用childOption()，因为客户端SocketChannel没有父服务器。
          */
-        bootstrap.group(group).channel(NioSocketChannel.class).handler(new CustomerHandleInitializer());
+        bootstrap.group(group).channel(NioSocketChannel.class).handler(new ClientInitializer());
         /**
          * 启动客户端
          * 我们应该调用connect()方法而不是bind()方法。
          */
-        ChannelFuture future = bootstrap.connect(imClientProjectConfig.getNettyHost(), imClientProjectConfig.getNettyPort()).sync();
+        ChannelFuture future = bootstrap.connect(imClientProjectProperties.getNettyHost(), imClientProjectProperties.getNettyPort()).sync();
         if (future.isSuccess()) {
             log.info("启动 Netty 成功");
-        }else{
+        } else {
             log.error("连接失败");
         }
         socketChannel = (SocketChannel) future.channel();

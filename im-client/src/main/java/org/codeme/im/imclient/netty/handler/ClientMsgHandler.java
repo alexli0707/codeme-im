@@ -6,9 +6,13 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.codeme.im.imclient.config.IMClientProjectConfig;
+import org.codeme.im.imclient.config.IMClientProjectProperties;
+import org.codeme.im.imclient.service.impl.ApiServiceImpl;
 import org.codeme.im.imclient.util.SpringBeanFactory;
 import org.codeme.im.imcommon.constant.MsgConstant;
+import org.codeme.im.imcommon.constant.SocketAuthStatus;
+import org.codeme.im.imcommon.http.RestHttpResponse;
+import org.codeme.im.imcommon.model.vo.AccessToken;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 
@@ -19,8 +23,48 @@ import org.codeme.im.imcommon.util.MsgBuilder;
  * @date 2020/5/17
  */
 @Slf4j
+//@Component
+//@Scope("prototype")
 public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
+    private SocketAuthStatus socketAuthStatus;
+
+    //    @Autowired
+    private IMClientProjectProperties imClientProjectProperties;
+
+    private ApiServiceImpl apiServiceImpl;
+
+    private long id;
+
+    public ClientMsgHandler() {
+
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        log.info("in channelActive");
+        socketAuthStatus = SocketAuthStatus.WATING;
+        Thread.sleep(500);
+        //准备完成验证
+        this.imClientProjectProperties = SpringBeanFactory.getBean(IMClientProjectProperties.class);
+        this.apiServiceImpl = SpringBeanFactory.getBean(ApiServiceImpl.class);
+        RestHttpResponse<AccessToken> tokenResponse = apiServiceImpl.oauth(this.imClientProjectProperties.getUserName(), this.imClientProjectProperties.getPassword());
+        if (tokenResponse.isSuccess()) {
+            String accessToken = tokenResponse.getData().getAccessToken();
+            ctx.writeAndFlush(MsgBuilder.makeAuthMsg(accessToken)).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+        } else {
+            //验证失败,关闭连接
+            log.error(tokenResponse.getMeta().getMessage());
+            ctx.channel().close();
+        }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        log.info("in channelInactive");
+    }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -29,7 +73,7 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
             if (idleStateEvent.state() == IdleState.WRITER_IDLE) {
                 log.info("start ping...");
                 //向服务端发送消息
-                ProtocolMsg pingMsg = MsgBuilder.makePingMsg(SpringBeanFactory.getBean(IMClientProjectConfig.class).getId());
+                ProtocolMsg pingMsg = MsgBuilder.makePingMsg(id);
                 ctx.writeAndFlush(pingMsg).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
             }
 
@@ -52,6 +96,13 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         switch (cmdType) {
             case MsgConstant.MsgCmdType.PONG:
                 log.info("收到pong,连接正常");
+                break;
+            case MsgConstant.MsgCmdType.AUTH_SUCCESS:
+                this.id = Long.parseLong(protocolMsg.getMsgContent());
+                log.info("channel id是:" + protocolMsg.getMsgContent());
+                break;
+            case MsgConstant.MsgCmdType.AUTH_FAIL:
+                channelHandlerContext.channel().close();
                 break;
         }
     }

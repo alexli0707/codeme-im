@@ -1,0 +1,33 @@
+version: '3.1'
+
+
+services:
+  
+  mysql:
+    image: mysql:8.0.15
+    container_name: im_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 3JH2umi69J7zD+OucLM=
+    ports:
+    - 3307:3306
+    volumes:
+    - ./mysql/data:/var/lib/mysql
+    - ./mysql/logs:/var/log/mysql
+
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#    - 8080:8080
+
+  redis:
+    image: redis:5.0.4
+    container_name: im_redis
+#    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+    - 6380:6379
+    volumes:
+    - ./redis/data:/data
+#    - ./redis/redis.conf:/usr/local/etc/redis/redis.conf

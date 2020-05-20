@@ -1,0 +1,38 @@
+server:
+  port: 8031
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    hikari:
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connection-timeout: 30000
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: DatebookHikariCP
+    username: root
+    password: 3JH2umi69J7zD+OucLM=
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3307/codeme-im?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&autoReconnect=true&failOverReadOnly=false&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+  profiles:
+    active: dev
+
+
+  redis:
+    database: 5
+    host: 127.0.0.1
+    lettuce:
+      pool:
+        max-idle: 100
+        max-wait: 2000
+        min-idle: 50
+    password: ''
+    port: 6380
+    timeout: 3000
+codeme:
+  password:
+    # auth与注册的时候是否对密码进行aes加密
+    aes: false
+

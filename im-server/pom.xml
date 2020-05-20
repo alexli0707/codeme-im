@@ -46,6 +46,11 @@
             <version>${dep.lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!--        redis集成-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
     </dependencies>
 <!--    <build>-->
 <!--        <plugins>-->

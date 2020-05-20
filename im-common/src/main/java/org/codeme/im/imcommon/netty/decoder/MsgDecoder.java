@@ -24,6 +24,7 @@ public class MsgDecoder extends ByteToMessageDecoder {
         int protocolVersion = byteBuf.readInt();
         int contentLength = byteBuf.readInt();
         byte[] msgContentBytes = new byte[contentLength];
+        byteBuf.readBytes(msgContentBytes);
         ProtocolMsg protocolMsg = new ProtocolMsg(cmdType, sendId, receiverId, protocolVersion, contentLength, new String(msgContentBytes));
         list.add(protocolMsg);
     }

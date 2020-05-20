@@ -14,7 +14,14 @@ import org.codeme.im.imcommon.netty.encoder.MsgEncoder;
  * @author walker lee
  * @date 2020/5/17
  */
-public class CustomerHandleInitializer extends ChannelInitializer<Channel> {
+public class ClientInitializer extends ChannelInitializer<Channel> {
+
+//    private ApplicationContext applicationContext;
+//
+//    public ClientInitializer(ApplicationContext applicationContext) {
+//        this.applicationContext = applicationContext;
+//    }
+
     @Override
     protected void initChannel(Channel channel) throws Exception {
         channel.pipeline()

@@ -7,11 +7,16 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.codeme.im.imcommon.constant.AuthStatus;
 import org.codeme.im.imcommon.constant.MsgConstant;
+import org.codeme.im.imcommon.constant.RedisKeyConstant;
+import org.codeme.im.imcommon.constant.ServerStatusCode;
+import org.codeme.im.imcommon.constant.SocketAuthStatus;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imserver.util.NettySocketHolder;
+import org.codeme.im.imserver.util.SpringBeanFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.StringUtils;
 
 /**
  * MsgHandler
@@ -21,16 +26,26 @@ import org.codeme.im.imserver.util.NettySocketHolder;
  */
 @Slf4j
 //@ChannelHandler.Sharable
+//@Component
+//@Scope("prototype")
 public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
+
     private long userId;
 
-    private AuthStatus authStatus = AuthStatus.INIT;
+    private SocketAuthStatus authStatus = SocketAuthStatus.INIT;
+
+    //    @Autowired
+    private RedisTemplate redisTemplate;
+
+    public MsgHandler() {
+        redisTemplate = SpringBeanFactory.getBean("redisTemplate", RedisTemplate.class);
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info(authStatus.toString());
-        authStatus = AuthStatus.WATING;
+        authStatus = SocketAuthStatus.WATING;
     }
 
     /**
@@ -63,17 +78,68 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         NettySocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
         switch (cmdType) {
+            case MsgConstant.MsgCmdType.AUTH:
+                boolean authSuccess = false;
+                //验证授权
+                if (this.isAuthSuccess()) {
+                    //已经授权成功的
+                    ctx.writeAndFlush(MsgBuilder.makeAuthSuccessMsg(userId));
+                    authSuccess = true;
+                } else {
+                    String accessToken = protocolMsg.getMsgContent();
+                    if (StringUtils.isEmpty(accessToken)) {
+
+                    } else {
+                        String id = (String) redisTemplate.opsForValue().get(RedisKeyConstant.getAccessTokenKey(accessToken));
+                        if (null == id) {
+                        } else {
+                            this.userId = Long.parseLong(id);
+                            authSuccess = true;
+                        }
+                    }
+                }
+                if (authSuccess) {
+                    ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makeAuthSuccessMsg(userId));
+                    if (channelFuture.isSuccess()) {
+                        NettySocketHolder.put(userId, (NioSocketChannel) ctx.channel());
+                        authStatus = SocketAuthStatus.SUCCESS;
+                    }
+                } else {
+                    ctx.writeAndFlush(MsgBuilder.makeAuthFailMsg(ServerStatusCode.ERROR_TOKEN));
+                    closeAndRemoveChannel(ctx);
+                }
+                break;
             case MsgConstant.MsgCmdType.PING:
+                if (!isAuthSuccess()) {
+                    closeAndRemoveChannel(ctx);
+                }
                 //返回pong消息
                 ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makePongMsg(protocolMsg.getSenderId()));
                 if (!channelFuture.isSuccess()) {
                     log.info("发送pong失败,关闭释放channel");
-                    NettySocketHolder.remove((NioSocketChannel) ctx.channel());
+                    closeAndRemoveChannel(ctx);
                 }
                 break;
             default:
                 break;
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("异常:", cause);
+        NettySocketHolder.remove(userId, (NioSocketChannel) ctx.channel());
+        super.exceptionCaught(ctx, cause);
+    }
+
+
+    private boolean isAuthSuccess() {
+        return authStatus.equals(SocketAuthStatus.SUCCESS) && userId != 0;
+    }
+
+    private void closeAndRemoveChannel(ChannelHandlerContext ctx) {
+        ctx.channel().close();
+        NettySocketHolder.remove(userId, (NioSocketChannel) ctx.channel());
 
     }
 }

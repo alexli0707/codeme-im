@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author walker lee
  * @date 2020/5/15
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"org.codeme"})
 public class IMClientApplication {
     public static void main(String[] args) {
         SpringApplication.run(IMClientApplication.class, args);

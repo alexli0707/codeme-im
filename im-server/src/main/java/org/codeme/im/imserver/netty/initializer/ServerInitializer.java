@@ -14,7 +14,9 @@ import org.codeme.im.imserver.netty.handler.MsgHandler;
  * @author walker lee
  * @date 2020/5/17
  */
-public class HeartbeatInitializer extends ChannelInitializer<Channel> {
+public class ServerInitializer extends ChannelInitializer<Channel> {
+
+
     @Override
     protected void initChannel(Channel channel) throws Exception {
         channel.pipeline()

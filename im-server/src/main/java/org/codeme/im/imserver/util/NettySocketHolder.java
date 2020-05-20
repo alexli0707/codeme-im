@@ -30,4 +30,11 @@ public class NettySocketHolder {
     public static void remove(NioSocketChannel nioSocketChannel) {
         MAP.entrySet().stream().filter(entry -> entry.getValue() == nioSocketChannel).forEach(entry -> MAP.remove(entry.getKey()));
     }
+
+    public static void remove(Long id, NioSocketChannel nioSocketChannel) {
+        NioSocketChannel existSocketChannel = MAP.remove(id);
+        if (null == existSocketChannel) {
+            remove(nioSocketChannel);
+        }
+    }
 }
