@@ -10,10 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imserver.config.IMServerProjectProperties;
 import org.codeme.im.imserver.netty.initializer.ServerInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 
@@ -43,7 +44,7 @@ public class ImServer {
      * @return
      * @throws InterruptedException
      */
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void start() throws InterruptedException {
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(acceptLoopGroup, socketLoopGroup)

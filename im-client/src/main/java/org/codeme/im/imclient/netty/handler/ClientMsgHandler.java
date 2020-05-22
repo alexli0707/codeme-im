@@ -40,20 +40,19 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     public ClientMsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.imClientProjectProperties = this.applicationContext.getBean(IMClientProjectProperties.class);
+        this.apiServiceImpl = this.applicationContext.getBean(ApiServiceImpl.class);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info("in channelActive");
-        this.imClientProjectProperties = this.applicationContext.getBean(IMClientProjectProperties.class);
-        this.apiServiceImpl = this.applicationContext.getBean(ApiServiceImpl.class);
+
 
         socketAuthStatus = SocketAuthStatus.WATING;
         Thread.sleep(500);
         //准备完成验证
-//        this.imClientProjectProperties = SpringBeanFactory.getBean(IMClientProjectProperties.class);
-//        this.apiServiceImpl = SpringBeanFactory.getBean(ApiServiceImpl.class);
         RestHttpResponse<AccessToken> tokenResponse = apiServiceImpl.oauth(this.imClientProjectProperties.getUserName(), this.imClientProjectProperties.getPassword());
         if (tokenResponse.isSuccess()) {
             String accessToken = tokenResponse.getData().getAccessToken();

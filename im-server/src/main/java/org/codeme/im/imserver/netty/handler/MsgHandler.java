@@ -41,13 +41,13 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     public MsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info(authStatus.toString());
-        this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
         authStatus = SocketAuthStatus.WATING;
     }
 

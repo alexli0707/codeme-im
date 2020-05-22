@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
 import org.codeme.im.imclient.netty.initializer.ClientInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 /**
  * Client
@@ -36,7 +36,7 @@ public class ImClient {
     private ApplicationContext applicationContext;
 
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void start() throws InterruptedException {
         Bootstrap bootstrap = new Bootstrap();
         /**
