@@ -48,10 +48,7 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info("in channelActive");
-
-
         socketAuthStatus = SocketAuthStatus.WATING;
-        Thread.sleep(500);
         //准备完成验证
         RestHttpResponse<AccessToken> tokenResponse = apiServiceImpl.oauth(this.imClientProjectProperties.getUserName(), this.imClientProjectProperties.getPassword());
         if (tokenResponse.isSuccess()) {
