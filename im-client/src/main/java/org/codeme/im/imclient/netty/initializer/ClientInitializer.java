@@ -7,6 +7,7 @@ import org.codeme.im.imclient.netty.handler.ClientMsgHandler;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.netty.decoder.MsgDecoder;
 import org.codeme.im.imcommon.netty.encoder.MsgEncoder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * CustomerHandleInitializer
@@ -16,11 +17,11 @@ import org.codeme.im.imcommon.netty.encoder.MsgEncoder;
  */
 public class ClientInitializer extends ChannelInitializer<Channel> {
 
-//    private ApplicationContext applicationContext;
-//
-//    public ClientInitializer(ApplicationContext applicationContext) {
-//        this.applicationContext = applicationContext;
-//    }
+    private ApplicationContext applicationContext;
+
+    public ClientInitializer(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     protected void initChannel(Channel channel) throws Exception {
@@ -29,6 +30,6 @@ public class ClientInitializer extends ChannelInitializer<Channel> {
                 .addLast(new IdleStateHandler(0, MsgConstant.PING_GAP, 0))
                 .addLast(new MsgEncoder())
                 .addLast(new MsgDecoder())
-                .addLast(new ClientMsgHandler());
+                .addLast(new ClientMsgHandler(this.applicationContext));
     }
 }

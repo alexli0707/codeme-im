@@ -8,13 +8,13 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
 import org.codeme.im.imclient.service.impl.ApiServiceImpl;
-import org.codeme.im.imclient.util.SpringBeanFactory;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.constant.SocketAuthStatus;
 import org.codeme.im.imcommon.http.RestHttpResponse;
 import org.codeme.im.imcommon.model.vo.AccessToken;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
+import org.springframework.context.ApplicationContext;
 
 /**
  * ClientMsgHandler
@@ -34,21 +34,26 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private ApiServiceImpl apiServiceImpl;
 
+    private ApplicationContext applicationContext;
+
     private long id;
 
-    public ClientMsgHandler() {
-
+    public ClientMsgHandler(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info("in channelActive");
+        this.imClientProjectProperties = this.applicationContext.getBean(IMClientProjectProperties.class);
+        this.apiServiceImpl = this.applicationContext.getBean(ApiServiceImpl.class);
+
         socketAuthStatus = SocketAuthStatus.WATING;
         Thread.sleep(500);
         //准备完成验证
-        this.imClientProjectProperties = SpringBeanFactory.getBean(IMClientProjectProperties.class);
-        this.apiServiceImpl = SpringBeanFactory.getBean(ApiServiceImpl.class);
+//        this.imClientProjectProperties = SpringBeanFactory.getBean(IMClientProjectProperties.class);
+//        this.apiServiceImpl = SpringBeanFactory.getBean(ApiServiceImpl.class);
         RestHttpResponse<AccessToken> tokenResponse = apiServiceImpl.oauth(this.imClientProjectProperties.getUserName(), this.imClientProjectProperties.getPassword());
         if (tokenResponse.isSuccess()) {
             String accessToken = tokenResponse.getData().getAccessToken();

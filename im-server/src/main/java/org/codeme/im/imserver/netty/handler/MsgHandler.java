@@ -14,7 +14,7 @@ import org.codeme.im.imcommon.constant.SocketAuthStatus;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imserver.util.NettySocketHolder;
-import org.codeme.im.imserver.util.SpringBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
@@ -37,14 +37,17 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     //    @Autowired
     private RedisTemplate redisTemplate;
 
-    public MsgHandler() {
-        redisTemplate = SpringBeanFactory.getBean("redisTemplate", RedisTemplate.class);
+    private ApplicationContext applicationContext;
+
+    public MsgHandler(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         log.info(authStatus.toString());
+        this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
         authStatus = SocketAuthStatus.WATING;
     }
 
