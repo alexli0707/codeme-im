@@ -10,9 +10,9 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 
 ## 预计的章节(对应分支)
 * [x] 1.init以及建立心跳(`chapter1_heartbeat`)
-* [x] 2.注册授权以及连接鉴权与管理
-* [x] 3.客户端断线重连与服务端连接管理
-* [x] 4.发送文本消息与指定单聊
+* [x] 2.注册授权以及连接鉴权与管理(`chapter2_authorization_authentication`)
+* [x] 3.客户端断线重连与服务端连接管理 (`chapter3_client_reconnection`)
+* [x] 4.发送文本消息与指定单聊(`chapter4_p2p_chat`)
 * [ ] 5.简易建群以及群聊
 
 
