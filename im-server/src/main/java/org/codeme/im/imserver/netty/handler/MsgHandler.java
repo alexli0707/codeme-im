@@ -11,8 +11,11 @@ import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.constant.RedisKeyConstant;
 import org.codeme.im.imcommon.constant.ServerStatusCode;
 import org.codeme.im.imcommon.constant.SocketAuthStatus;
+import org.codeme.im.imcommon.http.util.JsonTools;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
+import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
+import org.codeme.im.imcommon.util.SnowFlake;
 import org.codeme.im.imserver.util.NettySocketHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,9 +42,12 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private ApplicationContext applicationContext;
 
+    private SnowFlake serverMsgIdGenerator;
+
     public MsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
+        this.serverMsgIdGenerator = this.applicationContext.getBean(SnowFlake.class);
     }
 
     @Override
@@ -128,6 +134,17 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 if (!isAuthSuccess()) {
                     closeAndRemoveChannel(ctx);
                 }
+                TextMsg textMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
+                textMsg.setServerId(serverMsgIdGenerator.nextId());
+                protocolMsg.setMsgContent(JsonTools.simpleObjToStr(textMsg));
+                protocolMsg.setContentLength(protocolMsg.getMsgContent().getBytes().length);
+                ctx.writeAndFlush(MsgBuilder.makeServerAckTextMsg(protocolMsg.getSenderId(), protocolMsg.getReceiverId(), textMsg)).addListener(future -> {
+                    if (future.isSuccess()) {
+                        log.info("ack-{} - 文本消息成功", textMsg.getLocalId());
+                    } else {
+                        log.warn("ack-{}- 文本消息失败", textMsg.getLocalId());
+                    }
+                });
                 NioSocketChannel nioSocketChannel = NettySocketHolder.get(receiverId);
                 if (null == nioSocketChannel) {
                     log.warn("用户 [{}] 还没有上线", receiverId);

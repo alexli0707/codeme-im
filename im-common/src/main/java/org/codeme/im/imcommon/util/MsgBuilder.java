@@ -4,6 +4,7 @@ import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.constant.ServerStatusCode;
 import org.codeme.im.imcommon.http.util.JsonTools;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
+import org.codeme.im.imcommon.model.vo.TextMsg;
 
 /**
  * MsgBuilder
@@ -81,11 +82,25 @@ public class MsgBuilder {
      *
      * @param senderId
      * @param receiverId
-     * @param msg
+     * @param textMsg
      * @return
      */
-    public static ProtocolMsg makeTextMsg(long senderId, long receiverId, String msg) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, msg.getBytes().length, msg);
+    public static ProtocolMsg makeTextMsg(long senderId, long receiverId, TextMsg textMsg) {
+        String jsonContent = JsonTools.simpleObjToStr(textMsg);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+    }
+
+    /**
+     * 生成单点文本消息服务端ack消息
+     *
+     * @param senderId
+     * @param receiverId
+     * @param textMsg
+     * @return
+     */
+    public static ProtocolMsg makeServerAckTextMsg(long senderId, long receiverId, TextMsg textMsg) {
+        String jsonContent = JsonTools.simpleObjToStr(textMsg);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
     }
 
 
