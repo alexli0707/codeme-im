@@ -13,6 +13,7 @@
     <properties>
         <java.version>11</java.version>
         <dep.retrofit.version>2.6.0</dep.retrofit.version>
+        <dep.guava.version>29.0-jre</dep.guava.version>
     </properties>
     <dependencies>
         <dependency>
@@ -54,6 +55,11 @@
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-gson</artifactId>
             <version>${dep.retrofit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${dep.guava.version}</version>
         </dependency>
     </dependencies>
 

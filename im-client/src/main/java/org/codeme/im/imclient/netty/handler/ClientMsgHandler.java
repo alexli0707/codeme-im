@@ -7,6 +7,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
+import org.codeme.im.imclient.event.NeedStartReconnectEvent;
 import org.codeme.im.imclient.service.impl.ApiServiceImpl;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.constant.SocketAuthStatus;
@@ -38,10 +39,14 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private long id;
 
+    //除开授权验证失败的都需要尝试重连
+    private boolean needReconnect;
+
     public ClientMsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.imClientProjectProperties = this.applicationContext.getBean(IMClientProjectProperties.class);
         this.apiServiceImpl = this.applicationContext.getBean(ApiServiceImpl.class);
+        this.needReconnect = true;
     }
 
     @Override
@@ -65,6 +70,11 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         log.info("in channelInactive");
+        if (needReconnect) {
+            log.info("发送需要重连事件");
+            //发送需要重连事件
+            applicationContext.publishEvent(new NeedStartReconnectEvent(applicationContext));
+        }
     }
 
     @Override
@@ -103,6 +113,7 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 log.info("channel id是:" + protocolMsg.getMsgContent());
                 break;
             case MsgConstant.MsgCmdType.AUTH_FAIL:
+                needReconnect = false;
                 channelHandlerContext.channel().close();
                 break;
         }
