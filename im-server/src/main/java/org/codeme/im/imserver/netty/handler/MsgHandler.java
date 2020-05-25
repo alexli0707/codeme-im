@@ -80,6 +80,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         log.debug("收到消息: " + protocolMsg.toString());
         NettySocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
+        long receiverId = protocolMsg.getReceiverId();
         switch (cmdType) {
             case MsgConstant.MsgCmdType.AUTH:
                 boolean authSuccess = false;
@@ -122,6 +123,17 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                     log.info("发送pong失败,关闭释放channel");
                     closeAndRemoveChannel(ctx);
                 }
+                break;
+            case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
+                if (!isAuthSuccess()) {
+                    closeAndRemoveChannel(ctx);
+                }
+                NioSocketChannel nioSocketChannel = NettySocketHolder.get(receiverId);
+                if (null == nioSocketChannel) {
+                    log.warn("用户 [{}] 还没有上线", receiverId);
+                    break;
+                }
+                nioSocketChannel.writeAndFlush(protocolMsg);
                 break;
             default:
                 break;

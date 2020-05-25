@@ -73,8 +73,19 @@ public class MsgBuilder {
      */
     public static ProtocolMsg makeAuthFailMsg(ServerStatusCode serverStatusCode) {
         String jsonContent = JsonTools.simpleObjToStr(serverStatusCode);
-        System.out.println(jsonContent);
         return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH_FAIL, 0, 0, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+    }
+
+    /**
+     * 生成单点文本消息
+     *
+     * @param senderId
+     * @param receiverId
+     * @param msg
+     * @return
+     */
+    public static ProtocolMsg makeTextMsg(long senderId, long receiverId, String msg) {
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, msg.getBytes().length, msg);
     }
 
 

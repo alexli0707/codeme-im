@@ -15,7 +15,6 @@ public class IMClientProjectProperties {
     private int nettyPort;
     @Value("${imclient.netty.server.host}")
     private String nettyHost;
-    @Value("${imclient.channel.id}")
     private long id;
 
 //    private String accessToken;
@@ -48,13 +47,9 @@ public class IMClientProjectProperties {
         return password;
     }
 
-//    public String getAccessToken() {
-//        return accessToken;
-//    }
-//
-//    public void setAccessToken(String accessToken) {
-//        this.accessToken = accessToken;
-//    }
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getApiServerUrl() {
         return apiServerUrl;

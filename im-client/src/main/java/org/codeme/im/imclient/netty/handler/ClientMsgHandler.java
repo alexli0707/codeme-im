@@ -110,11 +110,15 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 break;
             case MsgConstant.MsgCmdType.AUTH_SUCCESS:
                 this.id = Long.parseLong(protocolMsg.getMsgContent());
-                log.info("channel id是:" + protocolMsg.getMsgContent());
+                this.imClientProjectProperties.setId(this.id);
+                log.info("user id是:" + protocolMsg.getMsgContent());
                 break;
             case MsgConstant.MsgCmdType.AUTH_FAIL:
                 needReconnect = false;
                 channelHandlerContext.channel().close();
+                break;
+            case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
+                log.info(String.format("收到来自{%d}的消息:%s",protocolMsg.getSenderId(),protocolMsg.getMsgContent()));
                 break;
         }
     }

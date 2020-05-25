@@ -2,6 +2,7 @@ package org.codeme.im.imclient.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
 import org.codeme.im.imclient.netty.initializer.ClientInitializer;
 import org.codeme.im.imclient.service.impl.ImReconnectionService;
+import org.codeme.im.imcommon.util.MsgBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -75,13 +77,13 @@ public class ImClient {
     }
 
     public void reconnect() throws InterruptedException {
-        if (null != socketChannel && socketChannel.isActive()) {
+        if (isSocketActive()) {
             log.info("连接正常,无需重连");
             return;
         }
         log.info("正在重新连接");
         boolean rs = start();
-        log.info("重连结果:"+String.valueOf(rs));
+        log.info("重连结果:" + String.valueOf(rs));
         if (rs) {
             imReconnectionService.onReconnect();
         }
@@ -92,5 +94,22 @@ public class ImClient {
             socketChannel.close();
         }
     }
+
+    public boolean sendTextMsg(long receiverId, String msg) {
+        if (isSocketActive() && imClientProjectProperties.getId() != 0) {
+            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeTextMsg(imClientProjectProperties.getId(), receiverId, msg));
+            future.addListener((ChannelFutureListener) channelFuture ->
+                    log.info("客户端手动发消息成功={}", msg));
+            return true;
+        } else {
+            log.info("连接与授权还未结束");
+            return false;
+        }
+    }
+
+    private boolean isSocketActive() {
+        return null != socketChannel && socketChannel.isActive();
+    }
+
 
 }
