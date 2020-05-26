@@ -13,4 +13,5 @@ public class UriConstant {
 
     public static final String USER = API + "/user";
     public static final String OAUTH = API + "/oauth";
+    public static final String CHATROOM = API + "/chatroom";
 }

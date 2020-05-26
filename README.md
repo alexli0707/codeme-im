@@ -43,6 +43,24 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
        "username": "admin",
        "password": "111111"
      }' 'http://localhost:8031/api/oauth'
+```       
+
+创建群
+
+```
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'Authorization: Bearer 40ef82a6537ccad2c256e98b6de5fe13' -d '{
+       "title": "技术交流群"
+     }' 'http://localhost:8031/api/chatroom'
+```    
+
+邀请进群
+
+```
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'Authorization: Bearer 40ef82a6537ccad2c256e98b6de5fe13' -d '{
+       "chatroom_id": 1265169045146738691,
+       "invitee":[2,3] 
+     }' 'http://localhost:8031/api/chatroom/invite'
+
 ```
 
 

@@ -10,6 +10,8 @@ public class ApiProjectConstant {
 
     public static final int TOKEN_EXPIRE_SECOND_PRODUCTION = 3600 * 24 * 30;
     public static final String TOKEN_TYPE = "Bearer";
+    public static final String KEY_USER_ID_ATTR = "currentUserId";
+
 
 
 }

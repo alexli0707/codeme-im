@@ -1,9 +1,9 @@
 package org.codeme.im.imapi.auth;
 
+import org.codeme.im.imapi.constant.ApiProjectConstant;
+import org.codeme.im.imapi.service.UserService;
 import org.codeme.im.imcommon.constant.RedisKeyConstant;
 import org.codeme.im.imcommon.constant.RestHttpErrorResponseEnum;
-import org.codeme.im.imapi.entity.User;
-import org.codeme.im.imapi.service.UserService;
 import org.codeme.im.imcommon.http.auth.AuthType;
 import org.codeme.im.imcommon.http.exp.RestHttpException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,15 +60,13 @@ public class RestRequestInterceptor implements HandlerInterceptor {
                     if (null == id) {
                         throw new RestHttpException(RestHttpErrorResponseEnum.INVALID_TOKEN);
                     }
-                    User user = userService.getById(id);
-                    if (null == user) {
-                        throw new RestHttpException(RestHttpErrorResponseEnum.INVALID_TOKEN);
-                    }
-                    request.setAttribute("currentUser", user);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                        throw new RestHttpException(RestHttpErrorResponseEnum.WARNING_UNAUTHORIZED);
+                    request.setAttribute(ApiProjectConstant.KEY_USER_ID_ATTR, id);
+//                    User user = userService.getById(id);
+//                    if (null == user) {
+//                        throw new RestHttpException(RestHttpErrorResponseEnum.INVALID_TOKEN);
 //                    }
+//                    user.setPassword(null);
+//                    request.setAttribute("currentUser", user);
                     return true;
                 default:
                     throw new RestHttpException(RestHttpErrorResponseEnum.UNKNOWN_AUTH_TYPE);
