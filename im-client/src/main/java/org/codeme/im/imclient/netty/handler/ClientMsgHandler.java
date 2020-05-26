@@ -102,7 +102,7 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ProtocolMsg protocolMsg) throws Exception {
         //从服务端收到消息时被调用
-        log.info("客户端收到消息={}", protocolMsg);
+        log.debug("客户端收到消息={}", protocolMsg);
         int cmdType = protocolMsg.getCmdType();
         switch (cmdType) {
             case MsgConstant.MsgCmdType.PONG:
@@ -118,8 +118,15 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 channelHandlerContext.channel().close();
                 break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
-                log.info(String.format("收到来自{%d}的消息:%s",protocolMsg.getSenderId(),protocolMsg.getMsgContent()));
+                log.info(String.format("收到来自{%d}的消息:%s", protocolMsg.getSenderId(), protocolMsg.getMsgContent()));
                 break;
+            case MsgConstant.MsgCmdType.ACK_TEXT_MSG:
+                log.info("收到ack消息:{}", protocolMsg);
+                break;
+            default:
+                log.error("未知消息");
+                break;
+
         }
     }
 }

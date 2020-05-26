@@ -14,6 +14,10 @@ public class IMServerProjectProperties {
 
     @Value("${imserver.netty.server.port}")
     private int nettyPort;
+    @Value("${imserver.machineId}")
+    private Integer machineId;
+    @Value("${imserver.datacenterId}")
+    private Integer dataCenterId;
 
     @Value("${spring.profiles.active}")
     private String activeProfile;
@@ -49,5 +53,13 @@ public class IMServerProjectProperties {
 
     public String getRedisPassword() {
         return redisPassword;
+    }
+
+    public Integer getMachineId() {
+        return machineId;
+    }
+
+    public Integer getDataCenterId() {
+        return dataCenterId;
     }
 }

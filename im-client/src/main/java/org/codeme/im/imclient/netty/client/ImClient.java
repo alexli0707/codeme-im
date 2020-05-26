@@ -11,7 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
 import org.codeme.im.imclient.netty.initializer.ClientInitializer;
 import org.codeme.im.imclient.service.impl.ImReconnectionService;
+import org.codeme.im.imcommon.constant.MsgConstant;
+import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
+import org.codeme.im.imcommon.util.SnowFlake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -19,6 +22,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,6 +52,9 @@ public class ImClient {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private SnowFlake msgIdGenerator;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -95,11 +102,12 @@ public class ImClient {
         }
     }
 
-    public boolean sendTextMsg(long receiverId, String msg) {
+    public boolean sendTextMsg(long receiverId, String text) {
         if (isSocketActive() && imClientProjectProperties.getId() != 0) {
-            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeTextMsg(imClientProjectProperties.getId(), receiverId, msg));
+            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeTextMsg(imClientProjectProperties.getId(),
+                    receiverId, new TextMsg(msgIdGenerator.nextId(), imClientProjectProperties.getId(), receiverId, MsgConstant.MsgContentType.TEXT, new Date(), text)));
             future.addListener((ChannelFutureListener) channelFuture ->
-                    log.info("客户端手动发消息成功={}", msg));
+                    log.info("客户端手动发消息成功={}", text));
             return true;
         } else {
             log.info("连接与授权还未结束");

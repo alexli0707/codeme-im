@@ -15,6 +15,11 @@ public class IMClientProjectProperties {
     private int nettyPort;
     @Value("${imclient.netty.server.host}")
     private String nettyHost;
+    @Value("${imclient.machineId}")
+    private Integer machineId;
+    @Value("${imclient.datacenterId}")
+    private Integer dataCenterId;
+
     private long id;
 
 //    private String accessToken;
@@ -53,5 +58,13 @@ public class IMClientProjectProperties {
 
     public String getApiServerUrl() {
         return apiServerUrl;
+    }
+
+    public Integer getMachineId() {
+        return machineId;
+    }
+
+    public Integer getDataCenterId() {
+        return dataCenterId;
     }
 }

@@ -26,4 +26,9 @@ public class MsgConstant {
         public static final int ACK_TEXT_MSG = 12;
 
     }
+
+
+    public static class MsgContentType {
+        public static final int TEXT = 1;
+    }
 }
