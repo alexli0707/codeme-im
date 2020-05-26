@@ -12,5 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2020-05-26
  */
 public interface ChatroomMapper extends BaseMapper<Chatroom> {
+    Integer increaseRoomMemberCount(Long id, Integer increaseCount);
 
 }

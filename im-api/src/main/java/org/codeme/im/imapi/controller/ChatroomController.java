@@ -14,6 +14,7 @@ import org.codeme.im.imcommon.http.RestHttpResponse;
 import org.codeme.im.imcommon.http.auth.AuthType;
 import org.codeme.im.imcommon.http.exp.RestHttpException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +44,9 @@ public class ChatroomController {
 
     @Autowired
     ChatRoomTransactionService chatRoomTransactionService;
+
+    @Autowired
+    RedisTemplate redisTemplate;
 
     /**
      * 创建群聊,必要传参`title`
@@ -79,7 +83,7 @@ public class ChatroomController {
             throw new RestHttpException(RestHttpErrorResponseEnum.INVALID_PARAMS_REQUEST);
         }
         List<ChatroomMember> chatroomMemberList = inviteeList.stream().map(aLong -> new ChatroomMember(chatroomId, aLong)).collect(Collectors.toList());
-        chatroomMemberService.batchInsertOnDuplicateUpdate(chatroomMemberList);
+        chatRoomTransactionService.inviteChatroomMemebers(chatroomMemberList, chatroomId, inviteeList);
         return RestHttpResponse.Builder().dataResponse(null).build();
     }
 

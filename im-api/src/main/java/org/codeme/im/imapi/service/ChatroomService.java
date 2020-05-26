@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ChatroomService extends IService<Chatroom> {
 
+    Integer increaseRoomMemberCount(Long id, Integer increaseCount);
+
 }

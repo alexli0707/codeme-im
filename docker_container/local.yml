@@ -25,6 +25,7 @@ services:
   redis:
     image: redis:5.0.4
     container_name: im_redis
+    restart: always
 #    command: redis-server /usr/local/etc/redis/redis.conf
     ports:
     - 6380:6379

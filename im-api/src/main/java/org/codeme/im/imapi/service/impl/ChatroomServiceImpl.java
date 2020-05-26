@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChatroomServiceImpl extends ServiceImpl<ChatroomMapper, Chatroom> implements ChatroomService {
 
+    @Override
+    public Integer increaseRoomMemberCount(Long id, Integer increaseCount) {
+        return this.getBaseMapper().increaseRoomMemberCount(id, increaseCount);
+    }
 }

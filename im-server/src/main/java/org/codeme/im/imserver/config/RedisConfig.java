@@ -47,6 +47,8 @@ public class RedisConfig {
         // 设置value的序列化规则和 key的序列化规则
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        //打开事务
+        redisTemplate.setEnableTransactionSupport(true);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }

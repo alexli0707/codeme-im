@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
  */
 @Component
 @Slf4j
-public class ImClient {
+public class ImClient implements ImClientFunction {
 
     @Autowired
     IMClientProjectProperties imClientProjectProperties;
@@ -83,6 +83,7 @@ public class ImClient {
         }
     }
 
+    @Override
     public void reconnect() throws InterruptedException {
         if (isSocketActive()) {
             log.info("连接正常,无需重连");
@@ -96,18 +97,34 @@ public class ImClient {
         }
     }
 
+    @Override
     public void close() {
         if (null != socketChannel) {
             socketChannel.close();
         }
     }
 
+    @Override
     public boolean sendTextMsg(long receiverId, String text) {
         if (isSocketActive() && imClientProjectProperties.getId() != 0) {
             ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeTextMsg(imClientProjectProperties.getId(),
                     receiverId, new TextMsg(msgIdGenerator.nextId(), imClientProjectProperties.getId(), receiverId, MsgConstant.MsgContentType.TEXT, new Date(), text)));
             future.addListener((ChannelFutureListener) channelFuture ->
                     log.info("客户端手动发消息成功={}", text));
+            return true;
+        } else {
+            log.info("连接与授权还未结束");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean sendChatroomTextMsg(long chatroomId, String text) {
+        if (isSocketActive() && imClientProjectProperties.getId() != 0) {
+            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeChatroomTextMsg(imClientProjectProperties.getId(),
+                    chatroomId, new TextMsg(msgIdGenerator.nextId(), imClientProjectProperties.getId(), chatroomId, MsgConstant.MsgContentType.TEXT, new Date(), text)));
+            future.addListener((ChannelFutureListener) channelFuture ->
+                    log.info("客户端手动发群oon消息成功={}", text));
             return true;
         } else {
             log.info("连接与授权还未结束");

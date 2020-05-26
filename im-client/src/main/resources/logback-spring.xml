@@ -38,7 +38,7 @@
             <appender-ref ref="RollingFile" />
             <appender-ref ref="Console" />
         </root>
-        <logger name="org.codeme.im.imclient" level="debug"/>
+        <logger name="org.codeme.im.imclient" level="info"/>
     </springProfile>
 
     <springProfile name="test | production">

@@ -13,7 +13,7 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * [x] 2.注册授权以及连接鉴权与管理(`chapter2_authorization_authentication`)
 * [x] 3.客户端断线重连与服务端连接管理 (`chapter3_client_reconnection`)
 * [x] 4.发送文本消息与指定单聊(`chapter4_p2p_chat`)
-* [ ] 5.简易建群以及群聊
+* [ ] 5.api建群,拉群以及群聊
 
 
 
@@ -57,7 +57,7 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept: applica
 
 ```
 curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'Authorization: Bearer 40ef82a6537ccad2c256e98b6de5fe13' -d '{
-       "chatroom_id": 1265169045146738691,
+       "chatroom_id": 1265169045146738693,
        "invitee":[2,3] 
      }' 'http://localhost:8031/api/chatroom/invite'
 

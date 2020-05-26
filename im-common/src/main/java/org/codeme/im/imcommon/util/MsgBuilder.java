@@ -103,5 +103,30 @@ public class MsgBuilder {
         return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
     }
 
+    /**
+     * 生成群聊文本消息
+     *
+     * @param senderId
+     * @param chatroomId
+     * @param textMsg
+     * @return
+     */
+    public static ProtocolMsg makeChatroomTextMsg(long senderId, long chatroomId, TextMsg textMsg) {
+        String jsonContent = JsonTools.simpleObjToStr(textMsg);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG, senderId, chatroomId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+    }
+
+    /**
+     * 生成群聊文本消息
+     *
+     * @param senderId
+     * @param chatroomId
+     * @param textMsg
+     * @return
+     */
+    public static ProtocolMsg makeChatroomAckTextMsg(long senderId, long chatroomId, TextMsg textMsg) {
+        String jsonContent = JsonTools.simpleObjToStr(textMsg);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_CHATROOM_TEXT_MSG, senderId, chatroomId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+    }
 
 }

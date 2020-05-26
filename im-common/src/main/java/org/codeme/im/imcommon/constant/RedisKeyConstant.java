@@ -7,6 +7,8 @@ public class RedisKeyConstant {
     //refreshtoken,value:string
     private static final String REFRESH_TOKEN = PROJECT_PREFIX + "refresh_token:%s";
 
+    private static final String CHATROOM_MEMBERS = PROJECT_PREFIX + "chatroom:%d";
+
 
     public static String getAccessTokenKey(String accessToken) {
         return String.format(ACCESS_TOKEN, accessToken);
@@ -14,6 +16,10 @@ public class RedisKeyConstant {
 
     public static String getRefreshTokenKey(String refreshToken) {
         return String.format(REFRESH_TOKEN, refreshToken);
+    }
+
+    public static String getChatroomMembers(Long chatroomId) {
+        return String.format(CHATROOM_MEMBERS, chatroomId);
     }
 
 }

@@ -21,6 +21,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
+import java.util.Set;
+
 /**
  * MsgHandler
  *
@@ -87,6 +89,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         NettySocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
         long receiverId = protocolMsg.getReceiverId();
+        long senderId = protocolMsg.getSenderId();
         switch (cmdType) {
             case MsgConstant.MsgCmdType.AUTH:
                 boolean authSuccess = false;
@@ -151,6 +154,32 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                     break;
                 }
                 nioSocketChannel.writeAndFlush(protocolMsg);
+                break;
+            case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
+                if (!isAuthSuccess()) {
+                    closeAndRemoveChannel(ctx);
+                }
+                Set<Integer> memberSet = redisTemplate.opsForSet().members(RedisKeyConstant.getChatroomMembers(receiverId));
+                memberSet.remove(senderId);
+                TextMsg chatroomTextMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
+                chatroomTextMsg.setServerId(serverMsgIdGenerator.nextId());
+                protocolMsg.setMsgContent(JsonTools.simpleObjToStr(chatroomTextMsg));
+                protocolMsg.setContentLength(protocolMsg.getMsgContent().getBytes().length);
+                ctx.writeAndFlush(MsgBuilder.makeChatroomAckTextMsg(senderId, protocolMsg.getReceiverId(), chatroomTextMsg)).addListener(future -> {
+                    if (future.isSuccess()) {
+                        log.info("ack-{} - 群文本消息成功", chatroomTextMsg.getLocalId());
+                    } else {
+                        log.warn("ack-{}- 群文本消息失败", chatroomTextMsg.getLocalId());
+                    }
+                });
+                for (Integer memberId :
+                        memberSet) {
+                    NioSocketChannel socketChannel = NettySocketHolder.get(Long.valueOf(memberId));
+                    if (null == socketChannel) {
+                        continue;
+                    }
+                    socketChannel.writeAndFlush(protocolMsg);
+                }
                 break;
             default:
                 break;
