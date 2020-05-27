@@ -13,7 +13,7 @@
 
     <properties>
         <dep.mybatis-plus-boot-starter.version>3.2.0</dep.mybatis-plus-boot-starter.version>
-        <dep.fastjson.version>1.2.22</dep.fastjson.version>
+        <dep.fastjson.version>1.2.25</dep.fastjson.version>
     </properties>
 
     <dependencies>
