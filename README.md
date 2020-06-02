@@ -2,7 +2,10 @@
 netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 
 ## 前言
-> 曾经用NIO写过商业化IM的android端sdk,也用NIO写过自己的玩具IM,在读完<netty in action>这本书之后觉得用netty来管理和维护长链接的socket来看代码会更优雅,入门更容易.再结合日常开发用的springboot的框架与docker容器化,想从0到1实现一个部署方便的分布式IM服务
+> 曾经用NIO写过商业化IM的android端sdk,也用NIO写过自己的玩具IM,在读完<netty in action>这本书之后觉得用netty来管理和维护长链接的socket来看代码会更优雅,入门更容易.再结合日常开发用的springboot的框架与docker容器化,从0到1实现一个部署方便的分布式IM服务
+
+## 特色
+> 面向开发者,容器化分布式部署, 重在设计与实现设计,满足基础功能之后关注点在于性能与开销的实现评测.
 
 
 
@@ -14,6 +17,15 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * [x] 3.客户端断线重连与服务端连接管理 (`chapter3_client_reconnection`)
 * [x] 4.发送文本消息与指定单聊(`chapter4_p2p_chat`)
 * [x] 5.api建群,拉群以及群文本聊天(`chapter5_chatroom_chat`)
+* [ ] 6.设计横向扩展,支持集群IM服务
+
+## Feature
+* [x] 1.容器化一键部署环境.用到的基础设施(docker,mysql,redis,zookeeper),主要框架(springboot2,netty等等)
+* [x] 2.完整的注册授权与socket鉴权(基于token),基础的长链接心跳以及僵尸socket的剔除, 客户端的断线重连设计与实现.
+* [x] 3.客户端发送文本单聊,api建群,拉群以及群文本聊天.
+* [x] 4.后端单实例与多实例设计上的区别与实现.
+
+
 
 
 
