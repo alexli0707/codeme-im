@@ -9,8 +9,12 @@ package org.codeme.im.imcommon.constant;
 public class MsgConstant {
     //心跳包间隔时间(s)
     public static final int PING_GAP = 15;
+
+    public static final int RPC_PING_GAP = 2;
     //服务端没有收到socket任何消息的最大时间
     public static final int MAX_IDLE_DURATION = 30;
+
+    public static final int RPC_MAX_IDLE_DURATION = 5;
 
     public static class Version {
         public static final int LONG_CONNECTION = 1;

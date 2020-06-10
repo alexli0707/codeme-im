@@ -12,6 +12,8 @@ public class ApiProjectConstant {
     public static final String TOKEN_TYPE = "Bearer";
     public static final String KEY_USER_ID_ATTR = "currentUserId";
 
+    public static final String IM_OUTER_SERVICE_ZK_DIR_PATH = "/services/outer/socket/im-server";
+
 
 
 }

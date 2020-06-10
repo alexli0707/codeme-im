@@ -1,7 +1,10 @@
 package org.codeme.im.imclient.task.runnable;
 
 import org.codeme.im.imclient.netty.client.ImClient;
+import org.codeme.im.imcommon.http.exp.RestHttpException;
 import org.springframework.context.ApplicationContext;
+
+import java.io.IOException;
 
 /**
  * ReconnectWorker
@@ -24,6 +27,10 @@ public class ReconnectTask implements Runnable {
         try {
             imClient.reconnect();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (RestHttpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

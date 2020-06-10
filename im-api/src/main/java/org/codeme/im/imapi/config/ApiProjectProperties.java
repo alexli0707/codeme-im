@@ -25,9 +25,8 @@ public class ApiProjectProperties {
     private String redisPassword;
     @Value("${codeme.password.aes}")
     private boolean isApiPasswordAesTrans;
-
-
-
+    @Value("${codeme.zookeeper.url}")
+    private String zookeeperUrl;
 
 
     public String getActiveProfile() {
@@ -52,5 +51,9 @@ public class ApiProjectProperties {
 
     public boolean isApiPasswordAesTrans() {
         return isApiPasswordAesTrans;
+    }
+
+    public String getZookeeperUrl() {
+        return zookeeperUrl;
     }
 }

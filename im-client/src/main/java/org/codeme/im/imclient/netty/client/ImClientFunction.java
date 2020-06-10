@@ -1,5 +1,9 @@
 package org.codeme.im.imclient.netty.client;
 
+import org.codeme.im.imcommon.http.exp.RestHttpException;
+
+import java.io.IOException;
+
 /**
  * ImClientFunction
  * 定义客户端Im通用功能(命令)
@@ -11,7 +15,7 @@ public interface ImClientFunction {
     /**
      * 重连
      */
-    void reconnect() throws InterruptedException;
+    void reconnect() throws InterruptedException, IOException, RestHttpException;
 
     /**
      * 关闭socket

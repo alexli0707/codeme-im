@@ -2,15 +2,20 @@ imserver:
   netty:
     server:
       port: 10001
+      inner-port: 20001
+      url: ${IMSERVER_URL:127.0.0.1:10001}
+      inner-url: ${IM_INNER_SERVER_URL:127.0.0.1:20001}
   machineId: ${HOST_MACHINE_ID:1}
   datacenterId: ${HOST_DATACENTER_ID:1}
+  zookeeper-url: localhost:2181
 spring:
   main:
     #关闭web
     web-application-type: 'NONE'
   profiles:
     active: dev
-
+  application:
+    name: im-server
   redis:
     database: 5
     host: 127.0.0.1
@@ -22,3 +27,8 @@ spring:
     password: ''
     port: 6380
     timeout: 3000
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true

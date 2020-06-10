@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOGS" value="./data/logs" />
+
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}) %line: %msg%n%throwable
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/spring-boot-logger.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>[%date{yyyy-MM-dd HH:mm:ss.SSS}] %X{logthreadId} %-5level %logger{80} %line [%C{1.}] - %msg%n</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+<!--    &lt;!&ndash; For sentry &ndash;&gt;-->
+<!--    <appender name="SentryAppender" class="io.sentry.logback.SentryAppender">-->
+<!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+<!--            <level>ERROR</level>-->
+<!--        </filter>-->
+<!--    </appender>-->
+
+    <springProfile name="dev">
+        <!-- LOG everything at INFO level -->
+        <root level="info">
+            <appender-ref ref="RollingFile" />
+            <appender-ref ref="Console" />
+        </root>
+        <logger name="org.codeme.im.imforward" level="info"/>
+    </springProfile>
+
+    <springProfile name="test | production">
+        <root level="info">
+            <appender-ref ref="RollingFile" />
+            <appender-ref ref="Console" />
+        </root>
+        <logger name="org.codeme.im" level="info"/>
+    </springProfile>
+
+
+</configuration>

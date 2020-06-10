@@ -1,4 +1,4 @@
-package org.codeme.im.imserver.netty.initializer;
+package org.codeme.im.imserver.netty.outer.initializer;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -6,7 +6,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.netty.decoder.MsgDecoder;
 import org.codeme.im.imcommon.netty.encoder.MsgEncoder;
-import org.codeme.im.imserver.netty.handler.MsgHandler;
+import org.codeme.im.imserver.netty.outer.handler.MsgHandler;
 import org.springframework.context.ApplicationContext;
 
 /**

@@ -32,7 +32,10 @@ import java.io.IOException;
 @Slf4j
 public class ApiServiceImpl {
 
+    private static final String BEARER = "Bearer %s";
+
     private ApiService apiService;
+
 
     public ApiServiceImpl(IMClientProjectProperties imClientProjectProperties) {
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -56,6 +59,19 @@ public class ApiServiceImpl {
     public RestHttpResponse<AccessToken> oauth(String username, String password) throws IOException, RestHttpException {
         Call<RestHttpResponse<AccessToken>> userInfoCall = apiService.oauth(new OauthParams(username, password));
         Response<RestHttpResponse<AccessToken>> response = userInfoCall.execute();
+        return response.body();
+    }
+
+    /**
+     * 获取imserver地址
+     * @param accessToken
+     * @return
+     * @throws IOException
+     * @throws RestHttpException
+     */
+    public RestHttpResponse<String> getIMServerUrl(String accessToken) throws IOException, RestHttpException {
+        Call<RestHttpResponse<String>> call = apiService.getIMServerUrl(String.format(BEARER, accessToken));
+        Response<RestHttpResponse<String>> response = call.execute();
         return response.body();
     }
 

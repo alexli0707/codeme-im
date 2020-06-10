@@ -12,6 +12,7 @@
         <module>im-client</module>
         <module>im-common</module>
         <module>im-api</module>
+        <module>im-forward</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -27,9 +28,22 @@
     <properties>
         <java.version>11</java.version>
         <dep.lombok.version>1.18.8</dep.lombok.version>
+        <dep.springboot.version>2.2.1.RELEASE</dep.springboot.version>
         <im-common.version>1.0.0.SNAPSHOT</im-common.version>
         <dep.netty.version>4.1.50.Final</dep.netty.version>
+        <dep.spring-cloud.version>Hoxton.RELEASE</dep.spring-cloud.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-parent</artifactId>
+                <version>Hoxton.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <plugins>
 <!--            <plugin>-->

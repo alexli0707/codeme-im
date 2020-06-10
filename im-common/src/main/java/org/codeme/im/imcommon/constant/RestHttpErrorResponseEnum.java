@@ -25,6 +25,7 @@ public enum RestHttpErrorResponseEnum implements RestHttpErrorResponseInterface 
     INVALID_USER_STATUS("无效用户状态", 100011, HttpStatus.SC_INTERNAL_SERVER_ERROR),
     OAUTH_FAILURE("用户名或者密码错误", 100012, HttpStatus.SC_BAD_REQUEST),
     EXISTED_USERNAME("用户名已存在", 100013, HttpStatus.SC_BAD_REQUEST),
+    IM_SERVER_INVALID("聊天服务暂不可用", 100014, HttpStatus.SC_INTERNAL_SERVER_ERROR),
     USERNAME_TOO_LONG("帐号过长,请输入最多不超过%d位的帐号", 1007, HttpStatus.SC_BAD_REQUEST),
     PASSWORD_TOO_LONG("密码过长,请输入最多不超过%d位的帐号", 1008, HttpStatus.SC_BAD_REQUEST),
     REFRESH_TOKEN_INVALID("账号已在其他设备登录，请重新登录", 100015, HttpStatus.SC_BAD_REQUEST),

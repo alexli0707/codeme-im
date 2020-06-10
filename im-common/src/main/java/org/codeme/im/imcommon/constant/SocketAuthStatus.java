@@ -7,6 +7,6 @@ package org.codeme.im.imcommon.constant;
  * @date 2020/5/18
  */
 public enum SocketAuthStatus {
-    INIT, WATING, SUCCESS, FAILURE
+    INIT, WATING, SUCCESS, FAILURE ,CLOSE
 
 }

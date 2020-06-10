@@ -35,4 +35,5 @@ codeme:
   password:
     # auth与注册的时候是否对密码进行aes加密
     aes: false
-
+  zookeeper:
+    url: localhost:2181

@@ -10,8 +10,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imclient.config.IMClientProjectProperties;
 import org.codeme.im.imclient.netty.initializer.ClientInitializer;
+import org.codeme.im.imclient.service.impl.ApiServiceImpl;
 import org.codeme.im.imclient.service.impl.ImReconnectionService;
 import org.codeme.im.imcommon.constant.MsgConstant;
+import org.codeme.im.imcommon.http.RestHttpResponse;
+import org.codeme.im.imcommon.http.exp.RestHttpException;
+import org.codeme.im.imcommon.model.vo.AccessToken;
 import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imcommon.util.SnowFlake;
@@ -22,6 +26,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -56,16 +61,30 @@ public class ImClient implements ImClientFunction {
     @Autowired
     private SnowFlake msgIdGenerator;
 
+    @Autowired
+    ApiServiceImpl apiServiceImpl;
+
 
     @EventListener(ApplicationReadyEvent.class)
-    public boolean start() throws InterruptedException {
+    public boolean start() throws InterruptedException, IOException, RestHttpException {
+        //准备完成验证
+        RestHttpResponse<AccessToken> tokenResponse = apiServiceImpl.oauth(this.imClientProjectProperties.getUserName(), this.imClientProjectProperties.getPassword());
+        if (!tokenResponse.isSuccess()) {
+            //验证失败
+            return false;
+        }
+        String accessToken = tokenResponse.getData().getAccessToken();
+        RestHttpResponse<String> imServerUrlResponse = apiServiceImpl.getIMServerUrl(accessToken);
+        String imServerUrl = imServerUrlResponse.getData();
+        String[] nettyParams = imServerUrl.split(":");
         Bootstrap bootstrap = new Bootstrap();
         /**
          * NioSocketChannel用于创建客户端通道，而不是NioServerSocketChannel。
          * 请注意，我们不像在ServerBootstrap中那样使用childOption()，因为客户端SocketChannel没有父服务器。
          */
         bootstrap.group(group).channel(NioSocketChannel.class).handler(new ClientInitializer(applicationContext));
-        ChannelFuture future = bootstrap.connect(imClientProjectProperties.getNettyHost(), imClientProjectProperties.getNettyPort());
+//        ChannelFuture future = bootstrap.connect(imClientProjectProperties.getNettyHost(), imClientProjectProperties.getNettyPort());
+        ChannelFuture future = bootstrap.connect(nettyParams[0], Integer.parseInt(nettyParams[1]));
         try {
             future.get(5, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
@@ -84,13 +103,13 @@ public class ImClient implements ImClientFunction {
     }
 
     @Override
-    public void reconnect() throws InterruptedException {
+    public void reconnect() throws InterruptedException, IOException, RestHttpException {
         if (isSocketActive()) {
             log.info("连接正常,无需重连");
             return;
         }
         log.info("正在重新连接");
-        boolean rs = start();
+        boolean rs = this.start();
         log.info("重连结果:" + String.valueOf(rs));
         if (rs) {
             imReconnectionService.onReconnect();

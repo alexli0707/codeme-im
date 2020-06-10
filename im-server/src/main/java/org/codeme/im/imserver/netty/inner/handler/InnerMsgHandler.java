@@ -1,4 +1,4 @@
-package org.codeme.im.imserver.netty.handler;
+package org.codeme.im.imserver.netty.inner.handler;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -9,17 +9,16 @@ import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.constant.RedisKeyConstant;
-import org.codeme.im.imcommon.constant.ServerStatusCode;
 import org.codeme.im.imcommon.constant.SocketAuthStatus;
 import org.codeme.im.imcommon.http.util.JsonTools;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imcommon.util.SnowFlake;
+import org.codeme.im.imserver.config.IMServerProjectProperties;
 import org.codeme.im.imserver.util.NettySocketHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.util.StringUtils;
 
 import java.util.Set;
 
@@ -33,7 +32,7 @@ import java.util.Set;
 //@ChannelHandler.Sharable
 //@Component
 //@Scope("prototype")
-public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
+public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private long userId;
 
@@ -44,12 +43,15 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private ApplicationContext applicationContext;
 
+    private IMServerProjectProperties imServerProjectProperties;
+
     private SnowFlake serverMsgIdGenerator;
 
-    public MsgHandler(ApplicationContext applicationContext) {
+    public InnerMsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
         this.serverMsgIdGenerator = this.applicationContext.getBean(SnowFlake.class);
+        this.imServerProjectProperties = this.applicationContext.getBean(IMServerProjectProperties.class);
     }
 
     @Override
@@ -68,7 +70,15 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.info("channelInactive");
+        onInactive(ctx);
+    }
+
+    private void onInactive(ChannelHandlerContext ctx) {
+        authStatus = SocketAuthStatus.CLOSE;
         NettySocketHolder.remove((NioSocketChannel) ctx.channel());
+        if (0 != this.userId) {
+            redisTemplate.opsForHash().delete(RedisKeyConstant.getUserSocketBelong(), String.valueOf(userId));
+        }
     }
 
     @Override
@@ -76,8 +86,8 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
             if (idleStateEvent.state() == IdleState.READER_IDLE) {
-                log.info("已经60秒没有收到信息！准备关闭僵尸连接");
-                NettySocketHolder.remove((NioSocketChannel) ctx.channel());
+                log.info("已经{}秒没有收到信息！准备关闭僵尸连接", MsgConstant.RPC_MAX_IDLE_DURATION);
+                onInactive(ctx);
             }
         }
         super.userEventTriggered(ctx, evt);
@@ -91,41 +101,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         long receiverId = protocolMsg.getReceiverId();
         long senderId = protocolMsg.getSenderId();
         switch (cmdType) {
-            case MsgConstant.MsgCmdType.AUTH:
-                boolean authSuccess = false;
-                //验证授权
-                if (this.isAuthSuccess()) {
-                    //已经授权成功的
-                    ctx.writeAndFlush(MsgBuilder.makeAuthSuccessMsg(userId));
-                    authSuccess = true;
-                } else {
-                    String accessToken = protocolMsg.getMsgContent();
-                    if (StringUtils.isEmpty(accessToken)) {
-
-                    } else {
-                        String id = (String) redisTemplate.opsForValue().get(RedisKeyConstant.getAccessTokenKey(accessToken));
-                        if (null == id) {
-                        } else {
-                            this.userId = Long.parseLong(id);
-                            authSuccess = true;
-                        }
-                    }
-                }
-                if (authSuccess) {
-                    ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makeAuthSuccessMsg(userId));
-                    if (channelFuture.isSuccess()) {
-                        NettySocketHolder.put(userId, (NioSocketChannel) ctx.channel());
-                        authStatus = SocketAuthStatus.SUCCESS;
-                    }
-                } else {
-                    ctx.writeAndFlush(MsgBuilder.makeAuthFailMsg(ServerStatusCode.ERROR_TOKEN));
-                    closeAndRemoveChannel(ctx);
-                }
-                break;
             case MsgConstant.MsgCmdType.PING:
-                if (!isAuthSuccess()) {
-                    closeAndRemoveChannel(ctx);
-                }
                 //返回pong消息
                 ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makePongMsg(protocolMsg.getSenderId()));
                 if (!channelFuture.isSuccess()) {
@@ -134,9 +110,6 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 }
                 break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
-                if (!isAuthSuccess()) {
-                    closeAndRemoveChannel(ctx);
-                }
                 TextMsg textMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
                 textMsg.setServerId(serverMsgIdGenerator.nextId());
                 protocolMsg.setMsgContent(JsonTools.simpleObjToStr(textMsg));
@@ -156,9 +129,6 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 nioSocketChannel.writeAndFlush(protocolMsg);
                 break;
             case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
-                if (!isAuthSuccess()) {
-                    closeAndRemoveChannel(ctx);
-                }
                 Set<Integer> memberSet = redisTemplate.opsForSet().members(RedisKeyConstant.getChatroomMembers(receiverId));
                 memberSet.remove(senderId);
                 TextMsg chatroomTextMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
@@ -189,18 +159,14 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("异常:", cause);
-        NettySocketHolder.remove(userId, (NioSocketChannel) ctx.channel());
+        onInactive(ctx);
         super.exceptionCaught(ctx, cause);
     }
 
 
-    private boolean isAuthSuccess() {
-        return authStatus.equals(SocketAuthStatus.SUCCESS) && userId != 0;
-    }
-
     private void closeAndRemoveChannel(ChannelHandlerContext ctx) {
         ctx.channel().close();
-        NettySocketHolder.remove(userId, (NioSocketChannel) ctx.channel());
+        onInactive(ctx);
 
     }
 }

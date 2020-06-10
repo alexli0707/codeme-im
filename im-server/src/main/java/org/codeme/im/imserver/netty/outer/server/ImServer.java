@@ -1,4 +1,4 @@
-package org.codeme.im.imserver.netty.server;
+package org.codeme.im.imserver.netty.outer.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -8,7 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imserver.config.IMServerProjectProperties;
-import org.codeme.im.imserver.netty.initializer.ServerInitializer;
+import org.codeme.im.imserver.netty.outer.initializer.ServerInitializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -46,6 +46,7 @@ public class ImServer {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void start() throws InterruptedException {
+        log.info("in start");
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(acceptLoopGroup, socketLoopGroup)
                 .channel(NioServerSocketChannel.class)

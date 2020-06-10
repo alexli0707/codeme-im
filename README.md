@@ -36,6 +36,7 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * im-server: im服务,主要是围绕链接的建立与管理,设计成可以多实例扩展部署.
 * im-common: 通用内容的抽取,包括消息的类型与处理
 * im-api: 提供rest-api的服务,预留部署的灵活程度与im-server模块拆分
+* im-registry: eureka server,用于提供内部服务注册(可用consul等代替)
 
 
 

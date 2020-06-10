@@ -102,6 +102,11 @@
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-zookeeper-discovery -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+        </dependency>
 
         <!--   帐号密码算法  start-->
         <dependency>

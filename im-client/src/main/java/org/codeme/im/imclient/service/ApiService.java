@@ -6,6 +6,8 @@ import org.codeme.im.imcommon.model.vo.AccessToken;
 import org.codeme.im.imcommon.model.vo.params.OauthParams;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
@@ -18,4 +20,7 @@ public interface ApiService {
 
     @POST(UriConstant.API + "/oauth")
     Call<RestHttpResponse<AccessToken>> oauth(@Body OauthParams oauthParams);
+
+    @GET(UriConstant.USER + "/server")
+    Call<RestHttpResponse<String>> getIMServerUrl(@Header("Authorization") String auth);
 }

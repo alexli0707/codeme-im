@@ -1,0 +1,19 @@
+server:
+  port: 10008
+
+spring:
+  application:
+    name: im-forward
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+  profiles:
+    active: dev
+
+codeme:
+  im:
+    imforward:
+      zookeeper-url: localhost:2181
+      forward-id: 1

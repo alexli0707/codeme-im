@@ -14,6 +14,8 @@ public class IMServerProjectProperties {
 
     @Value("${imserver.netty.server.port}")
     private int nettyPort;
+    @Value("${imserver.netty.server.inner-port}")
+    private int innerNettyPort;
     @Value("${imserver.machineId}")
     private Integer machineId;
     @Value("${imserver.datacenterId}")
@@ -29,6 +31,12 @@ public class IMServerProjectProperties {
     private String redisPort;
     @Value("${spring.redis.password}")
     private String redisPassword;
+    @Value("${imserver.netty.server.url}")
+    private String imServerUrl;
+    @Value("${imserver.netty.server.inner-url}")
+    private String imInnerServerUrl;
+    @Value("${imserver.zookeeper-url}")
+    private String zookeeperUrl;
 
 
     public int getNettyPort() {
@@ -61,5 +69,25 @@ public class IMServerProjectProperties {
 
     public Integer getDataCenterId() {
         return dataCenterId;
+    }
+
+    public String getZkId() {
+        return String.format("%d-%d", machineId, dataCenterId);
+    }
+
+    public String getImServerUrl() {
+        return imServerUrl;
+    }
+
+    public String getZookeeperUrl() {
+        return zookeeperUrl;
+    }
+
+    public int getInnerNettyPort() {
+        return innerNettyPort;
+    }
+
+    public String getImInnerServerUrl() {
+        return imInnerServerUrl;
     }
 }

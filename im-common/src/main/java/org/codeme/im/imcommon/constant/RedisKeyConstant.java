@@ -1,13 +1,15 @@
 package org.codeme.im.imcommon.constant;
 
 public class RedisKeyConstant {
-    private static final String PROJECT_PREFIX = "codeme-im:";
+    private static final String PROJECT_PREFIX = "codeme_im:";
     //accesstoken,value:string
     private static final String ACCESS_TOKEN = PROJECT_PREFIX + "access_token:%s";
     //refreshtoken,value:string
     private static final String REFRESH_TOKEN = PROJECT_PREFIX + "refresh_token:%s";
 
     private static final String CHATROOM_MEMBERS = PROJECT_PREFIX + "chatroom:%d";
+
+    private static final String USER_SOCKET_BELONG = PROJECT_PREFIX+"user_socket_belong";
 
 
     public static String getAccessTokenKey(String accessToken) {
@@ -22,4 +24,7 @@ public class RedisKeyConstant {
         return String.format(CHATROOM_MEMBERS, chatroomId);
     }
 
+    public static String getUserSocketBelong() {
+        return USER_SOCKET_BELONG;
+    }
 }
