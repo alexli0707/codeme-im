@@ -2,6 +2,8 @@ package org.codeme.im.imserver.netty.inner.initializer;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.codeme.im.imcommon.constant.MsgConstant;
 import org.codeme.im.imcommon.netty.decoder.MsgDecoder;
@@ -27,6 +29,8 @@ public class InnerServerInitializer extends ChannelInitializer<Channel> {
     protected void initChannel(Channel channel) throws Exception {
         channel.pipeline()
                 .addLast(new IdleStateHandler(MsgConstant.RPC_MAX_IDLE_DURATION, 0, 0))
+                .addLast(new LengthFieldBasedFrameDecoder(2048, 0, 2, 0, 2))
+                .addLast(new LengthFieldPrepender(2))
                 .addLast(new MsgDecoder())
                 .addLast(new MsgEncoder())
                 .addLast(new InnerMsgHandler(applicationContext));

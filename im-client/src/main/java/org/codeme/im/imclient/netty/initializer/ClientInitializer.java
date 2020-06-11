@@ -2,6 +2,8 @@ package org.codeme.im.imclient.netty.initializer;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.codeme.im.imclient.netty.handler.ClientMsgHandler;
 import org.codeme.im.imcommon.constant.MsgConstant;
@@ -28,6 +30,8 @@ public class ClientInitializer extends ChannelInitializer<Channel> {
         channel.pipeline()
                 //10 秒没发送消息 将IdleStateHandler 添加到 ChannelPipeline 中
                 .addLast(new IdleStateHandler(0, MsgConstant.PING_GAP, 0))
+                .addLast(new LengthFieldBasedFrameDecoder(2048, 0, 2, 0, 2))
+                .addLast(new LengthFieldPrepender(2))
                 .addLast(new MsgEncoder())
                 .addLast(new MsgDecoder())
                 .addLast(new ClientMsgHandler(this.applicationContext));
