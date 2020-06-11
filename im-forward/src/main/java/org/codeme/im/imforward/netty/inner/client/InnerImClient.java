@@ -7,6 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imforward.config.IMForwardProperties;
 import org.codeme.im.imforward.netty.inner.initializer.InnerClientInitializer;
 import org.codeme.im.imforward.service.impl.InnerImReconnectionService;
@@ -60,7 +61,7 @@ public class InnerImClient implements InnerImClientFunction {
          * NioSocketChannel用于创建客户端通道，而不是NioServerSocketChannel。
          * 请注意，我们不像在ServerBootstrap中那样使用childOption()，因为客户端SocketChannel没有父服务器。
          */
-        bootstrap.group(group).channel(NioSocketChannel.class).handler(new InnerClientInitializer(applicationContext,innerNettyServerId));
+        bootstrap.group(group).channel(NioSocketChannel.class).handler(new InnerClientInitializer(applicationContext, innerNettyServerId));
         String[] hostAndPort = innerNettyUrl.split(":");
         ChannelFuture future = bootstrap.connect(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
         try {
@@ -111,5 +112,14 @@ public class InnerImClient implements InnerImClientFunction {
 
     public void setInnerNettyServerId(String innerNettyServerId) {
         this.innerNettyServerId = innerNettyServerId;
+    }
+
+    public boolean sendMsg(ProtocolMsg protocolMsg) {
+        if (null != socketChannel && socketChannel.isActive()) {
+            socketChannel.writeAndFlush(protocolMsg);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

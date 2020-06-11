@@ -18,12 +18,14 @@ import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imcommon.util.SnowFlake;
 import org.codeme.im.imserver.config.IMServerProjectProperties;
 import org.codeme.im.imserver.constant.IMServerConstant;
-import org.codeme.im.imserver.util.NettySocketHolder;
+import org.codeme.im.imserver.service.impl.RoundRobbinForwardMsgServiceImpl;
+import org.codeme.im.imserver.util.OuterSocketHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * MsgHandler
@@ -41,7 +43,6 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private SocketAuthStatus authStatus = SocketAuthStatus.INIT;
 
-    //    @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
     private ApplicationContext applicationContext;
@@ -50,11 +51,14 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private SnowFlake serverMsgIdGenerator;
 
+    private RoundRobbinForwardMsgServiceImpl roundRobbinForwardMsgService;
+
     public MsgHandler(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         this.redisTemplate = this.applicationContext.getBean("redisTemplate", RedisTemplate.class);
         this.serverMsgIdGenerator = this.applicationContext.getBean(SnowFlake.class);
         this.imServerProjectProperties = this.applicationContext.getBean(IMServerProjectProperties.class);
+        this.roundRobbinForwardMsgService = this.applicationContext.getBean(RoundRobbinForwardMsgServiceImpl.class);
     }
 
     @Override
@@ -78,10 +82,10 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private void onInactive(ChannelHandlerContext ctx) {
         authStatus = SocketAuthStatus.CLOSE;
-        NettySocketHolder.remove((NioSocketChannel) ctx.channel());
-        log.info(String.valueOf(this.userId));
         if (0 != this.userId) {
-            redisTemplate.opsForHash().delete(RedisKeyConstant.getUserSocketBelong(), String.valueOf(userId));
+            OuterSocketHolder.remove(this.userId, (NioSocketChannel) ctx.channel());
+            //此时如果是应用被关闭,服务种redis的连接池可能已经关闭
+            redisTemplate.delete(RedisKeyConstant.getUserSocketBelong(userId));
         }
     }
 
@@ -129,8 +133,8 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                     ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makeAuthSuccessMsg(userId));
                     if (channelFuture.isSuccess()) {
                         ctx.channel().attr(IMServerConstant.KEY_USER_ID).set(senderId);
-                        redisTemplate.opsForHash().put(RedisKeyConstant.getUserSocketBelong(), String.valueOf(userId), imServerProjectProperties.getZkId());
-                        NettySocketHolder.put(userId, (NioSocketChannel) ctx.channel());
+                        onUserOnline();
+                        OuterSocketHolder.put(userId, (NioSocketChannel) ctx.channel());
                         authStatus = SocketAuthStatus.SUCCESS;
                     }
                 } else {
@@ -147,6 +151,8 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 if (!channelFuture.isSuccess()) {
                     log.info("发送pong失败,关闭释放channel");
                     closeAndRemoveChannel(ctx);
+                } else {
+                    onUserOnline();
                 }
                 break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
@@ -171,14 +177,20 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                     log.info(" id: {} 接收者不在线", receiverId);
                     break;
                 } else if (zkId.equals(imServerProjectProperties.getZkId())) {
-                    NioSocketChannel nioSocketChannel = NettySocketHolder.get(receiverId);
+                    NioSocketChannel nioSocketChannel = OuterSocketHolder.get(receiverId);
                     if (null == nioSocketChannel) {
                         log.warn("用户 [{}] 还没有上线", receiverId);
                         break;
                     }
                     nioSocketChannel.writeAndFlush(protocolMsg);
                 } else {
-                    //TODO 往转发服务投递
+                    NioSocketChannel nioSocketChannel = roundRobbinForwardMsgService.getRoundRobbinChannel();
+                    if (null == nioSocketChannel){
+                        log.error("没有可用的转发服务");
+                        break;
+                    }
+                    log.info("开始转发投递");
+                    nioSocketChannel.writeAndFlush(protocolMsg);
                 }
 
                 break;
@@ -201,7 +213,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 });
                 for (String memberId :
                         memberSet) {
-                    NioSocketChannel socketChannel = NettySocketHolder.get(Long.valueOf(memberId));
+                    NioSocketChannel socketChannel = OuterSocketHolder.get(Long.valueOf(memberId));
                     if (null == socketChannel) {
                         continue;
                     }
@@ -211,6 +223,10 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
             default:
                 break;
         }
+    }
+
+    private void onUserOnline() {
+        redisTemplate.opsForValue().set(RedisKeyConstant.getUserSocketBelong(userId), imServerProjectProperties.getZkId(), MsgConstant.PING_GAP + 5, TimeUnit.SECONDS);
     }
 
     @Override
@@ -237,7 +253,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
      * @return
      */
     private String getReceiverSocketServer(long receiverId) {
-        return String.valueOf(redisTemplate.opsForHash().get(RedisKeyConstant.getUserSocketBelong(), String.valueOf(receiverId)));
+        return String.valueOf(redisTemplate.opsForValue().get(RedisKeyConstant.getUserSocketBelong(receiverId)));
     }
 
 }

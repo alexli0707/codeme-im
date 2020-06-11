@@ -16,7 +16,8 @@ import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imcommon.util.SnowFlake;
 import org.codeme.im.imserver.config.IMServerProjectProperties;
-import org.codeme.im.imserver.util.NettySocketHolder;
+import org.codeme.im.imserver.util.InnerSocketHolder;
+import org.codeme.im.imserver.util.OuterSocketHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -34,7 +35,7 @@ import java.util.Set;
 //@Scope("prototype")
 public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
-    private long userId;
+    private long forwardId;
 
     private SocketAuthStatus authStatus = SocketAuthStatus.INIT;
 
@@ -75,9 +76,8 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 
     private void onInactive(ChannelHandlerContext ctx) {
         authStatus = SocketAuthStatus.CLOSE;
-        NettySocketHolder.remove((NioSocketChannel) ctx.channel());
-        if (0 != this.userId) {
-            redisTemplate.opsForHash().delete(RedisKeyConstant.getUserSocketBelong(), String.valueOf(userId));
+        if (0 != this.forwardId) {
+            InnerSocketHolder.remove((NioSocketChannel) ctx.channel());
         }
     }
 
@@ -96,11 +96,22 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProtocolMsg protocolMsg) throws Exception {
         log.debug("收到消息: " + protocolMsg.toString());
-        NettySocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
+        OuterSocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
         long receiverId = protocolMsg.getReceiverId();
         long senderId = protocolMsg.getSenderId();
         switch (cmdType) {
+            case MsgConstant.MsgCmdType.RPC_AUTH:
+                //返回rpc auth成功消息
+                ChannelFuture rpcAuthFuture = ctx.writeAndFlush(MsgBuilder.makeRPCAuthSuccessMsg(senderId));
+                if (rpcAuthFuture.isSuccess()) {
+                    this.forwardId = senderId;
+                    InnerSocketHolder.put((NioSocketChannel) ctx.channel());
+                } else {
+                    log.info("发送auth success失败,关闭释放channel");
+                    closeAndRemoveChannel(ctx);
+                }
+                break;
             case MsgConstant.MsgCmdType.PING:
                 //返回pong消息
                 ChannelFuture channelFuture = ctx.writeAndFlush(MsgBuilder.makePongMsg(protocolMsg.getSenderId()));
@@ -110,18 +121,7 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 }
                 break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
-                TextMsg textMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
-                textMsg.setServerId(serverMsgIdGenerator.nextId());
-                protocolMsg.setMsgContent(JsonTools.simpleObjToStr(textMsg));
-                protocolMsg.setContentLength(protocolMsg.getMsgContent().getBytes().length);
-                ctx.writeAndFlush(MsgBuilder.makeServerAckTextMsg(protocolMsg.getSenderId(), protocolMsg.getReceiverId(), textMsg)).addListener(future -> {
-                    if (future.isSuccess()) {
-                        log.info("ack-{} - 文本消息成功", textMsg.getLocalId());
-                    } else {
-                        log.warn("ack-{}- 文本消息失败", textMsg.getLocalId());
-                    }
-                });
-                NioSocketChannel nioSocketChannel = NettySocketHolder.get(receiverId);
+                NioSocketChannel nioSocketChannel = OuterSocketHolder.get(receiverId);
                 if (null == nioSocketChannel) {
                     log.warn("用户 [{}] 还没有上线", receiverId);
                     break;
@@ -144,7 +144,7 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 });
                 for (Integer memberId :
                         memberSet) {
-                    NioSocketChannel socketChannel = NettySocketHolder.get(Long.valueOf(memberId));
+                    NioSocketChannel socketChannel = OuterSocketHolder.get(Long.valueOf(memberId));
                     if (null == socketChannel) {
                         continue;
                     }
@@ -167,6 +167,5 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     private void closeAndRemoveChannel(ChannelHandlerContext ctx) {
         ctx.channel().close();
         onInactive(ctx);
-
     }
 }

@@ -11,6 +11,17 @@ spring:
         enabled: true
   profiles:
     active: dev
+  redis:
+    database: 5
+    host: 127.0.0.1
+    lettuce:
+      pool:
+        max-idle: 100
+        max-wait: 2000
+        min-idle: 50
+    password: ''
+    port: 6380
+    timeout: 3000
 
 codeme:
   im:

@@ -45,8 +45,11 @@ public class RoundRobbinIMServerServiceImpl implements RoundRobbinIMServerServic
     @Override
     public String getIMServerUrlWithRoundRobbin() {
         int robbin = roundRobbinInt.incrementAndGet();
+        if (0 == imServerSize) {
+            return null;
+        }
         String imServerUrl = imServerList.get(Math.abs(robbin % imServerSize));
-        log.info("roundrobin get url:"+imServerUrl);
+        log.info("roundrobin get url:" + imServerUrl);
         return imServerUrl;
     }
 

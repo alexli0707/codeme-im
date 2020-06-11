@@ -78,6 +78,27 @@ public class MsgBuilder {
     }
 
     /**
+     * 发送内部通道请求授权消息
+     *
+     * @param serverId
+     * @return
+     */
+    public static ProtocolMsg makeRPCAuthMsg(long serverId) {
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH, serverId, 0, MsgConstant.Version.LONG_CONNECTION, 0, "");
+    }
+
+    /**
+     * 返回内部通道请求授权成功消息
+     *
+     * @param serverId
+     * @return
+     */
+    public static ProtocolMsg makeRPCAuthSuccessMsg(long serverId) {
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH_SUCCESS, 0, serverId, MsgConstant.Version.LONG_CONNECTION, 0, "");
+    }
+
+
+    /**
      * 生成单点文本消息
      *
      * @param senderId

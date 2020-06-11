@@ -23,6 +23,7 @@ public class IMServerProjectProperties {
 
     @Value("${spring.profiles.active}")
     private String activeProfile;
+
     @Value("${spring.redis.database}")
     private String redisDatabase;
     @Value("${spring.redis.host}")
@@ -31,6 +32,7 @@ public class IMServerProjectProperties {
     private String redisPort;
     @Value("${spring.redis.password}")
     private String redisPassword;
+
     @Value("${imserver.netty.server.url}")
     private String imServerUrl;
     @Value("${imserver.netty.server.inner-url}")

@@ -52,7 +52,7 @@ public class OauthController {
     AccessTokenService accessTokenService;
 
     @Autowired
-    RedisTemplate redisTemplate;
+    RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     ApiProjectProperties projectProperties;

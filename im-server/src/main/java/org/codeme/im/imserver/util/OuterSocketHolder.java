@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author walker lee
  * @date 2020/5/17
  */
-public class NettySocketHolder {
+public class OuterSocketHolder {
 
     private static final Map<Long, NioSocketChannel> MAP = new ConcurrentHashMap<>(16);
 

@@ -1,10 +1,8 @@
 package org.codeme.im.imapi.config;
 
 import org.codeme.im.imapi.auth.RestRequestInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -17,8 +15,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class RequestInterceptorConfig implements WebMvcConfigurer {
 
-    @Autowired
-    RedisTemplate redisTemplate;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

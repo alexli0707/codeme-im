@@ -7,6 +7,8 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.codeme.im.imcommon.constant.RedisKeyConstant;
+import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imforward.config.IMForwardProperties;
 import org.codeme.im.imforward.constant.IMForwardConstant;
 import org.codeme.im.imforward.netty.inner.client.InnerImClient;
@@ -14,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +42,9 @@ public class ForwardManagerService {
 
     @Autowired
     IMForwardProperties imForwardProperties;
+
+    @Autowired
+    RedisTemplate<String, Object> redisTemplate;
 
 
     ConcurrentHashMap<String, InnerImClient> innerImClientHashMap = new ConcurrentHashMap<>();
@@ -91,6 +98,15 @@ public class ForwardManagerService {
         }
     }
 
+    public boolean forwardMsg(ProtocolMsg protocolMsg, long receiverId) {
+        String innerServerId = this.getReceiverSocketServer(receiverId);
+        if (StringUtils.isEmpty(innerServerId)) {
+            log.error("当前用户不在线");
+            return false;
+        }
+        return innerImClientHashMap.get(innerServerId).sendMsg(protocolMsg);
+    }
+
     /**
      * 启动Curator
      *
@@ -116,6 +132,17 @@ public class ForwardManagerService {
 
     private String getServerIdFromPath(String path) {
         return path.substring(path.lastIndexOf(File.separator) + 1);
+    }
+
+
+    /**
+     * 获取接收者长连接服务实例名,返回为空则用户不在线或者没有建立连接
+     *
+     * @param receiverId
+     * @return
+     */
+    private String getReceiverSocketServer(long receiverId) {
+        return String.valueOf(redisTemplate.opsForValue().get(RedisKeyConstant.getUserSocketBelong(receiverId)));
     }
 
 

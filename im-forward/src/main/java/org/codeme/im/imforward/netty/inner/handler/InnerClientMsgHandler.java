@@ -12,6 +12,7 @@ import org.codeme.im.imcommon.model.vo.ProtocolMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imforward.config.IMForwardProperties;
 import org.codeme.im.imforward.event.NeedStartReconnectEvent;
+import org.codeme.im.imforward.service.impl.ForwardManagerService;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -35,6 +36,8 @@ public class InnerClientMsgHandler extends SimpleChannelInboundHandler<ProtocolM
 
     private String innerNettyServerId;
 
+    private ForwardManagerService forwardManagerService;
+
 
     //除开授权验证失败的都需要尝试重连
     private boolean needReconnect;
@@ -43,6 +46,7 @@ public class InnerClientMsgHandler extends SimpleChannelInboundHandler<ProtocolM
         this.applicationContext = applicationContext;
         this.innerNettyServerId = innerNettyServerId;
         this.imForwardProperties = this.applicationContext.getBean(IMForwardProperties.class);
+        this.forwardManagerService = this.applicationContext.getBean(ForwardManagerService.class);
         this.needReconnect = true;
     }
 
@@ -51,6 +55,8 @@ public class InnerClientMsgHandler extends SimpleChannelInboundHandler<ProtocolM
         super.channelActive(ctx);
         log.info("in channelActive");
         socketAuthStatus = SocketAuthStatus.WATING;
+        ProtocolMsg rpcAuthMsg = MsgBuilder.makeRPCAuthMsg(imForwardProperties.getForwardId());
+        ctx.writeAndFlush(rpcAuthMsg).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
 
     @Override
@@ -91,12 +97,17 @@ public class InnerClientMsgHandler extends SimpleChannelInboundHandler<ProtocolM
         //从服务端收到消息时被调用
         log.debug("客户端收到消息={}", protocolMsg);
         int cmdType = protocolMsg.getCmdType();
+        long receiverId = protocolMsg.getReceiverId();
         switch (cmdType) {
             case MsgConstant.MsgCmdType.PONG:
                 log.info("收到pong,连接正常");
                 break;
+            case MsgConstant.MsgCmdType.RPC_AUTH_SUCCESS:
+                log.info("rpc auth success,连接正常");
+                break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
                 log.info(String.format("收到来自{%d}的消息:%s", protocolMsg.getSenderId(), protocolMsg.getMsgContent()));
+                this.forwardManagerService.forwardMsg(protocolMsg, receiverId);
                 break;
             case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
                 log.info(String.format("收到来自群{%d}的群消息:%s", protocolMsg.getReceiverId(), protocolMsg.getMsgContent()));

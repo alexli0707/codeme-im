@@ -76,6 +76,7 @@ public class ImClient implements ImClientFunction {
         String accessToken = tokenResponse.getData().getAccessToken();
         RestHttpResponse<String> imServerUrlResponse = apiServiceImpl.getIMServerUrl(accessToken);
         String imServerUrl = imServerUrlResponse.getData();
+        log.info("target imserverUrl:" + imServerUrl);
         String[] nettyParams = imServerUrl.split(":");
         Bootstrap bootstrap = new Bootstrap();
         /**

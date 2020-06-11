@@ -9,7 +9,7 @@ public class RedisKeyConstant {
 
     private static final String CHATROOM_MEMBERS = PROJECT_PREFIX + "chatroom:%d";
 
-    private static final String USER_SOCKET_BELONG = PROJECT_PREFIX+"user_socket_belong";
+    private static final String USER_SOCKET_BELONG = PROJECT_PREFIX + "user:%d";
 
 
     public static String getAccessTokenKey(String accessToken) {
@@ -24,7 +24,7 @@ public class RedisKeyConstant {
         return String.format(CHATROOM_MEMBERS, chatroomId);
     }
 
-    public static String getUserSocketBelong() {
-        return USER_SOCKET_BELONG;
+    public static String getUserSocketBelong(Long userId) {
+        return String.format(USER_SOCKET_BELONG, userId);
     }
 }
