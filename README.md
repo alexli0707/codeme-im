@@ -69,9 +69,9 @@ curl -X POST --header 'Content-Type: application/json' --header 'Accept: applica
 邀请进群
 
 ```
-curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'Authorization: Bearer 40ef82a6537ccad2c256e98b6de5fe13' -d '{
+curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' --header 'Authorization: Bearer d8b0885de5b377afb9acc3c174553c77' -d '{
        "chatroom_id": 1265169045146738693,
-       "invitee":[2,3] 
+       "invitee":[1,2,3] 
      }' 'http://localhost:8031/api/chatroom/invite'
 
 ```

@@ -18,6 +18,7 @@ public class MsgConstant {
 
     public static class Version {
         public static final int LONG_CONNECTION = 1;
+        public static final int CHATROOM = 2;
     }
 
     public static class MsgCmdType {

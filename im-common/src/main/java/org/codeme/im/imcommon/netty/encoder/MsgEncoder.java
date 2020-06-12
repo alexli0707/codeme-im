@@ -18,6 +18,7 @@ public class MsgEncoder extends MessageToByteEncoder<ProtocolMsg> {
         byteBuf.writeInt(protocolMsg.getCmdType());
         byteBuf.writeLong(protocolMsg.getSenderId());
         byteBuf.writeLong(protocolMsg.getReceiverId());
+        byteBuf.writeLong(protocolMsg.getChatroomId());
         byteBuf.writeInt(protocolMsg.getProtocolVersion());
         byteBuf.writeInt(protocolMsg.getContentLength());
         byteBuf.writeBytes(protocolMsg.getMsgContent().getBytes());

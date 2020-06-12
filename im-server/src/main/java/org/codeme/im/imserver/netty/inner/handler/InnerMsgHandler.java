@@ -8,11 +8,8 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imcommon.constant.MsgConstant;
-import org.codeme.im.imcommon.constant.RedisKeyConstant;
 import org.codeme.im.imcommon.constant.SocketAuthStatus;
-import org.codeme.im.imcommon.http.util.JsonTools;
 import org.codeme.im.imcommon.model.vo.ProtocolMsg;
-import org.codeme.im.imcommon.model.vo.TextMsg;
 import org.codeme.im.imcommon.util.MsgBuilder;
 import org.codeme.im.imcommon.util.SnowFlake;
 import org.codeme.im.imserver.config.IMServerProjectProperties;
@@ -20,8 +17,6 @@ import org.codeme.im.imserver.util.InnerSocketHolder;
 import org.codeme.im.imserver.util.OuterSocketHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
-
-import java.util.Set;
 
 /**
  * MsgHandler
@@ -100,6 +95,7 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
         int cmdType = protocolMsg.getCmdType();
         long receiverId = protocolMsg.getReceiverId();
         long senderId = protocolMsg.getSenderId();
+        NioSocketChannel nioSocketChannel;
         switch (cmdType) {
             case MsgConstant.MsgCmdType.RPC_AUTH:
                 //返回rpc auth成功消息
@@ -121,7 +117,7 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 }
                 break;
             case MsgConstant.MsgCmdType.SEND_TEXT_MSG:
-                NioSocketChannel nioSocketChannel = OuterSocketHolder.get(receiverId);
+                nioSocketChannel = OuterSocketHolder.get(receiverId);
                 if (null == nioSocketChannel) {
                     log.warn("用户 [{}] 还没有上线", receiverId);
                     break;
@@ -129,27 +125,12 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 nioSocketChannel.writeAndFlush(protocolMsg);
                 break;
             case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
-                Set<Integer> memberSet = redisTemplate.opsForSet().members(RedisKeyConstant.getChatroomMembers(receiverId));
-                memberSet.remove(senderId);
-                TextMsg chatroomTextMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
-                chatroomTextMsg.setServerId(serverMsgIdGenerator.nextId());
-                protocolMsg.setMsgContent(JsonTools.simpleObjToStr(chatroomTextMsg));
-                protocolMsg.setContentLength(protocolMsg.getMsgContent().getBytes().length);
-                ctx.writeAndFlush(MsgBuilder.makeChatroomAckTextMsg(senderId, protocolMsg.getReceiverId(), chatroomTextMsg)).addListener(future -> {
-                    if (future.isSuccess()) {
-                        log.info("ack-{} - 群文本消息成功", chatroomTextMsg.getLocalId());
-                    } else {
-                        log.warn("ack-{}- 群文本消息失败", chatroomTextMsg.getLocalId());
-                    }
-                });
-                for (Integer memberId :
-                        memberSet) {
-                    NioSocketChannel socketChannel = OuterSocketHolder.get(Long.valueOf(memberId));
-                    if (null == socketChannel) {
-                        continue;
-                    }
-                    socketChannel.writeAndFlush(protocolMsg);
+                nioSocketChannel = OuterSocketHolder.get(receiverId);
+                if (null == nioSocketChannel) {
+                    log.warn("用户 [{}] 还没有上线", receiverId);
+                    break;
                 }
+                nioSocketChannel.writeAndFlush(protocolMsg);
                 break;
             default:
                 break;

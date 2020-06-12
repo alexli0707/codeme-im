@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 public class RestRequestInterceptor implements HandlerInterceptor {
 
     @Autowired
-    RedisTemplate<String, String> redisTemplate;
+    RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     UserService userService;

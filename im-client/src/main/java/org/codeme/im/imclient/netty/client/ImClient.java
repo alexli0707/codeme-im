@@ -141,7 +141,7 @@ public class ImClient implements ImClientFunction {
     @Override
     public boolean sendChatroomTextMsg(long chatroomId, String text) {
         if (isSocketActive() && imClientProjectProperties.getId() != 0) {
-            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeChatroomTextMsg(imClientProjectProperties.getId(),
+            ChannelFuture future = socketChannel.writeAndFlush(MsgBuilder.makeChatroomTextMsg(imClientProjectProperties.getId(), 0,
                     chatroomId, new TextMsg(msgIdGenerator.nextId(), imClientProjectProperties.getId(), chatroomId, MsgConstant.MsgContentType.TEXT, new Date(), text)));
             future.addListener((ChannelFutureListener) channelFuture ->
                     log.info("客户端手动发群oon消息成功={}", text));

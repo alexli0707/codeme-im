@@ -121,7 +121,7 @@ public class ClientMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 log.info(String.format("收到来自{%d}的消息:%s", protocolMsg.getSenderId(), protocolMsg.getMsgContent()));
                 break;
             case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
-                log.info(String.format("收到来自群{%d}的群消息:%s", protocolMsg.getReceiverId(), protocolMsg.getMsgContent()));
+                log.info(String.format("收到来自群{%d}的群消息:%s", protocolMsg.getChatroomId(), protocolMsg.getMsgContent()));
                 break;
             case MsgConstant.MsgCmdType.ACK_TEXT_MSG:
                 log.info("收到ack消息:{}", protocolMsg);

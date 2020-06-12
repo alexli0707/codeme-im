@@ -107,6 +107,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
 //        NettySocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
         long receiverId = protocolMsg.getReceiverId();
+        long chatroomId = protocolMsg.getChatroomId();
         long senderId = protocolMsg.getSenderId();
         switch (cmdType) {
             case MsgConstant.MsgCmdType.AUTH:
@@ -185,7 +186,7 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                     nioSocketChannel.writeAndFlush(protocolMsg);
                 } else {
                     NioSocketChannel nioSocketChannel = roundRobbinForwardMsgService.getRoundRobbinChannel();
-                    if (null == nioSocketChannel){
+                    if (null == nioSocketChannel) {
                         log.error("没有可用的转发服务");
                         break;
                     }
@@ -198,26 +199,45 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                 if (!isAuthSuccess()) {
                     closeAndRemoveChannel(ctx);
                 }
-                Set<String> memberSet = redisTemplate.opsForSet().members(RedisKeyConstant.getChatroomMembers(receiverId));
-                memberSet.remove(senderId);
+                Set memberSet = redisTemplate.opsForSet().members(RedisKeyConstant.getChatroomMembers(chatroomId));
                 TextMsg chatroomTextMsg = JsonTools.strToObject(protocolMsg.getMsgContent(), TextMsg.class);
                 chatroomTextMsg.setServerId(serverMsgIdGenerator.nextId());
                 protocolMsg.setMsgContent(JsonTools.simpleObjToStr(chatroomTextMsg));
                 protocolMsg.setContentLength(protocolMsg.getMsgContent().getBytes().length);
-                ctx.writeAndFlush(MsgBuilder.makeChatroomAckTextMsg(senderId, protocolMsg.getReceiverId(), chatroomTextMsg)).addListener(future -> {
+                ctx.writeAndFlush(MsgBuilder.makeChatroomAckTextMsg(senderId, receiverId, chatroomId, chatroomTextMsg)).addListener(future -> {
                     if (future.isSuccess()) {
                         log.info("ack-{} - 群文本消息成功", chatroomTextMsg.getLocalId());
                     } else {
                         log.warn("ack-{}- 群文本消息失败", chatroomTextMsg.getLocalId());
                     }
                 });
-                for (String memberId :
+                memberSet.remove(senderId);
+                for (Object memberId :
                         memberSet) {
-                    NioSocketChannel socketChannel = OuterSocketHolder.get(Long.valueOf(memberId));
-                    if (null == socketChannel) {
-                        continue;
+                    Long chatroomMemberId = Long.valueOf((Integer) memberId);
+                    //开始直接发送或者投递到转发服务模块
+                    String serverId = this.getReceiverSocketServer(chatroomMemberId);
+                    protocolMsg.setReceiverId(chatroomMemberId);
+                    if (StringUtils.isEmpty(serverId)) {
+                        //用户不在线
+                        log.info(" id: {} 接收者不在线", memberId);
+                        break;
+                    } else if (serverId.equals(imServerProjectProperties.getZkId())) {
+                        NioSocketChannel nioSocketChannel = OuterSocketHolder.get(chatroomMemberId);
+                        if (null == nioSocketChannel) {
+                            log.warn("用户 [{}] 还没有上线", memberId);
+                            break;
+                        }
+                        nioSocketChannel.writeAndFlush(protocolMsg);
+                    } else {
+                        NioSocketChannel nioSocketChannel = roundRobbinForwardMsgService.getRoundRobbinChannel();
+                        if (null == nioSocketChannel) {
+                            log.error("没有可用的转发服务");
+                            break;
+                        }
+                        log.info("开始转发投递");
+                        nioSocketChannel.writeAndFlush(protocolMsg);
                     }
-                    socketChannel.writeAndFlush(protocolMsg);
                 }
                 break;
             default:

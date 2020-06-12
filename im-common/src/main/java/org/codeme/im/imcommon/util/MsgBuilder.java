@@ -14,17 +14,21 @@ import org.codeme.im.imcommon.model.vo.TextMsg;
  */
 public class MsgBuilder {
 
-    public static ProtocolMsg makeMsg(int cmdType, long senderId, long receiverId, int protocolVersion, int contentLength, String msgContent) {
+    public static ProtocolMsg makeMsg(int cmdType, long senderId, long receiverId, long chatroomId, int protocolVersion, int contentLength, String msgContent) {
         ProtocolMsg protocolMsg;
         switch (protocolVersion) {
             case MsgConstant.Version.LONG_CONNECTION:
                 protocolMsg = new ProtocolMsg(cmdType, senderId, receiverId, protocolVersion, contentLength, msgContent);
+                break;
+            case MsgConstant.Version.CHATROOM:
+                protocolMsg = new ProtocolMsg(cmdType, senderId, receiverId, chatroomId, protocolVersion, contentLength, msgContent);
                 break;
             default:
                 throw new IllegalArgumentException("非法消息版本");
         }
         return protocolMsg;
     }
+
 
     /**
      * 生成ping消息, receiverId不关注默认为0
@@ -33,7 +37,7 @@ public class MsgBuilder {
      * @return
      */
     public static ProtocolMsg makePingMsg(long senderId) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.PING, senderId, 0, MsgConstant.Version.LONG_CONNECTION, 0, "");
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.PING, senderId, 0, 0, MsgConstant.Version.CHATROOM, 0, "");
     }
 
     /**
@@ -43,7 +47,7 @@ public class MsgBuilder {
      * @return
      */
     public static ProtocolMsg makePongMsg(long receiverId) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.PONG, 0, receiverId, MsgConstant.Version.LONG_CONNECTION, 0, "");
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.PONG, 0, receiverId, 0, MsgConstant.Version.CHATROOM, 0, "");
     }
 
     /**
@@ -53,7 +57,7 @@ public class MsgBuilder {
      * @return
      */
     public static ProtocolMsg makeAuthMsg(String accessToken) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH, 0, 0, MsgConstant.Version.LONG_CONNECTION, accessToken.getBytes().length, accessToken);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH, 0, 0, 0, MsgConstant.Version.CHATROOM, accessToken.getBytes().length, accessToken);
     }
 
     /**
@@ -64,7 +68,7 @@ public class MsgBuilder {
      */
     public static ProtocolMsg makeAuthSuccessMsg(long id) {
         String msgContent = String.valueOf(id);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH_SUCCESS, 0, 0, MsgConstant.Version.LONG_CONNECTION, msgContent.getBytes().length, msgContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH_SUCCESS, 0, 0, 0, MsgConstant.Version.CHATROOM, msgContent.getBytes().length, msgContent);
     }
 
     /**
@@ -74,7 +78,7 @@ public class MsgBuilder {
      */
     public static ProtocolMsg makeAuthFailMsg(ServerStatusCode serverStatusCode) {
         String jsonContent = JsonTools.simpleObjToStr(serverStatusCode);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH_FAIL, 0, 0, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.AUTH_FAIL, 0, 0, 0, MsgConstant.Version.CHATROOM, jsonContent.getBytes().length, jsonContent);
     }
 
     /**
@@ -84,7 +88,7 @@ public class MsgBuilder {
      * @return
      */
     public static ProtocolMsg makeRPCAuthMsg(long serverId) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH, serverId, 0, MsgConstant.Version.LONG_CONNECTION, 0, "");
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH, serverId, 0, 0, MsgConstant.Version.CHATROOM, 0, "");
     }
 
     /**
@@ -94,7 +98,7 @@ public class MsgBuilder {
      * @return
      */
     public static ProtocolMsg makeRPCAuthSuccessMsg(long serverId) {
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH_SUCCESS, 0, serverId, MsgConstant.Version.LONG_CONNECTION, 0, "");
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.RPC_AUTH_SUCCESS, 0, serverId, 0, MsgConstant.Version.CHATROOM, 0, "");
     }
 
 
@@ -108,7 +112,7 @@ public class MsgBuilder {
      */
     public static ProtocolMsg makeTextMsg(long senderId, long receiverId, TextMsg textMsg) {
         String jsonContent = JsonTools.simpleObjToStr(textMsg);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_TEXT_MSG, senderId, receiverId, 0, MsgConstant.Version.CHATROOM, jsonContent.getBytes().length, jsonContent);
     }
 
     /**
@@ -121,7 +125,7 @@ public class MsgBuilder {
      */
     public static ProtocolMsg makeServerAckTextMsg(long senderId, long receiverId, TextMsg textMsg) {
         String jsonContent = JsonTools.simpleObjToStr(textMsg);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_TEXT_MSG, senderId, receiverId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_TEXT_MSG, senderId, receiverId, 0, MsgConstant.Version.CHATROOM, jsonContent.getBytes().length, jsonContent);
     }
 
     /**
@@ -132,22 +136,22 @@ public class MsgBuilder {
      * @param textMsg
      * @return
      */
-    public static ProtocolMsg makeChatroomTextMsg(long senderId, long chatroomId, TextMsg textMsg) {
+    public static ProtocolMsg makeChatroomTextMsg(long senderId, long receiverId, long chatroomId, TextMsg textMsg) {
         String jsonContent = JsonTools.simpleObjToStr(textMsg);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG, senderId, chatroomId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG, senderId, receiverId, chatroomId, MsgConstant.Version.CHATROOM, jsonContent.getBytes().length, jsonContent);
     }
 
     /**
-     * 生成群聊文本消息
+     * 生成群聊ack文本消息
      *
      * @param senderId
      * @param chatroomId
      * @param textMsg
      * @return
      */
-    public static ProtocolMsg makeChatroomAckTextMsg(long senderId, long chatroomId, TextMsg textMsg) {
+    public static ProtocolMsg makeChatroomAckTextMsg(long senderId, long receiverId, long chatroomId, TextMsg textMsg) {
         String jsonContent = JsonTools.simpleObjToStr(textMsg);
-        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_CHATROOM_TEXT_MSG, senderId, chatroomId, MsgConstant.Version.LONG_CONNECTION, jsonContent.getBytes().length, jsonContent);
+        return MsgBuilder.makeMsg(MsgConstant.MsgCmdType.ACK_CHATROOM_TEXT_MSG, senderId, receiverId, chatroomId, MsgConstant.Version.CHATROOM, jsonContent.getBytes().length, jsonContent);
     }
 
 }

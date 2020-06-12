@@ -111,9 +111,11 @@ public class InnerClientMsgHandler extends SimpleChannelInboundHandler<ProtocolM
                 break;
             case MsgConstant.MsgCmdType.SEND_CHATROOM_TEXT_MSG:
                 log.info(String.format("收到来自群{%d}的群消息:%s", protocolMsg.getReceiverId(), protocolMsg.getMsgContent()));
+                this.forwardManagerService.forwardMsg(protocolMsg, receiverId);
                 break;
             case MsgConstant.MsgCmdType.ACK_TEXT_MSG:
                 log.info("收到ack消息:{}", protocolMsg);
+
                 break;
             case MsgConstant.MsgCmdType.ACK_CHATROOM_TEXT_MSG:
                 log.info("收到ack群消息:{}", protocolMsg);

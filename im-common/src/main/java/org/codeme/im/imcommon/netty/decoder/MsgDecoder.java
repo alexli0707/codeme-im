@@ -21,11 +21,12 @@ public class MsgDecoder extends ByteToMessageDecoder {
         int cmdType = byteBuf.readInt();
         long sendId = byteBuf.readLong();
         long receiverId = byteBuf.readLong();
+        long chatroomId = byteBuf.readLong();
         int protocolVersion = byteBuf.readInt();
         int contentLength = byteBuf.readInt();
         byte[] msgContentBytes = new byte[contentLength];
         byteBuf.readBytes(msgContentBytes);
-        ProtocolMsg protocolMsg = new ProtocolMsg(cmdType, sendId, receiverId, protocolVersion, contentLength, new String(msgContentBytes));
+        ProtocolMsg protocolMsg = new ProtocolMsg(cmdType, sendId, receiverId, chatroomId, protocolVersion, contentLength, new String(msgContentBytes));
         list.add(protocolMsg);
     }
 }
