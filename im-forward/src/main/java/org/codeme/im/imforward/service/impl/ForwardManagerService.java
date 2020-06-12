@@ -104,6 +104,8 @@ public class ForwardManagerService {
             log.error("当前用户不在线");
             return false;
         }
+        log.info(innerImClientHashMap.toString());
+        log.info(innerServerId);
         return innerImClientHashMap.get(innerServerId).sendMsg(protocolMsg);
     }
 

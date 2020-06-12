@@ -91,7 +91,6 @@ public class InnerMsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProtocolMsg protocolMsg) throws Exception {
         log.debug("收到消息: " + protocolMsg.toString());
-        OuterSocketHolder.put(protocolMsg.getSenderId(), (NioSocketChannel) ctx.channel());
         int cmdType = protocolMsg.getCmdType();
         long receiverId = protocolMsg.getReceiverId();
         long senderId = protocolMsg.getSenderId();

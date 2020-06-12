@@ -211,10 +211,13 @@ public class MsgHandler extends SimpleChannelInboundHandler<ProtocolMsg> {
                         log.warn("ack-{}- 群文本消息失败", chatroomTextMsg.getLocalId());
                     }
                 });
-                memberSet.remove(senderId);
                 for (Object memberId :
                         memberSet) {
                     Long chatroomMemberId = Long.valueOf((Integer) memberId);
+                    //不转发给自己
+                    if (chatroomMemberId.equals(senderId)) {
+                        continue;
+                    }
                     //开始直接发送或者投递到转发服务模块
                     String serverId = this.getReceiverSocketServer(chatroomMemberId);
                     protocolMsg.setReceiverId(chatroomMemberId);

@@ -22,6 +22,10 @@ spring:
     password: ''
     port: 6380
     timeout: 3000
+# 打开该配置会导致无法建立netty连接
+#  main:
+#    #关闭web
+#    web-application-type: 'NONE'
 
 codeme:
   im:
