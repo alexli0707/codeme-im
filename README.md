@@ -17,7 +17,8 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * [x] 3.客户端断线重连与服务端连接管理 (`chapter3_client_reconnection`)
 * [x] 4.发送文本消息与指定单聊(`chapter4_p2p_chat`)
 * [x] 5.api建群,拉群以及群文本聊天(`chapter5_chatroom_chat`)
-* [ ] 6.设计横向扩展,支持集群IM服务
+* [x] 6.设计横向扩展,支持集群IM服务(`chapter6_distributed`)
+
 
 ## Feature
 * [x] 1.容器化一键部署环境.用到的基础设施(docker,mysql,redis,zookeeper),主要框架(springboot2,netty等等)
@@ -36,7 +37,7 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * im-server: im服务,主要是围绕链接的建立与管理,设计成可以多实例扩展部署.
 * im-common: 通用内容的抽取,包括消息的类型与处理
 * im-api: 提供rest-api的服务,预留部署的灵活程度与im-server模块拆分
-* im-registry: eureka server,用于提供内部服务注册(可用consul等代替)
+* im-forward: 服务内转发服务,用于在线用户于不同server之间的消息投递(通过内部socket通道)
 
 
 
