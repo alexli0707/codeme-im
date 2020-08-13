@@ -1,6 +1,7 @@
 package org.codeme.im.imapi.controller;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.codeme.im.imapi.auth.AuthRequired;
 import org.codeme.im.imapi.service.RoundRobbinIMServerService;
 import org.codeme.im.imcommon.constant.RestHttpErrorResponseEnum;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping(UriConstant.USER)
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -41,6 +43,7 @@ public class UserController {
     public RestHttpResponse getServerUrl(HttpServletRequest httpServletRequest) throws RestHttpException {
         String imServerUrl = roundRobbinIMServerService.getIMServerUrlWithRoundRobbin();
         if (StringUtils.isEmpty(imServerUrl)){
+            log.error("没有找到可用imserver");
             throw new RestHttpException(RestHttpErrorResponseEnum.IM_SERVER_INVALID);
         }
         return RestHttpResponse.Builder().dataResponse(imServerUrl).build();

@@ -41,6 +41,9 @@ public class ConsoleScannerTask implements Runnable {
                     log.warn("正确的发送格式为: {接收者id}<{消息内容}");
                     continue;
                 }
+//                for (int i = 0; i < 1000; i++) {
+//                    imClient.sendTextMsg(Long.parseLong(msgs[0]), String.valueOf(i));
+//                }
                 imClient.sendTextMsg(Long.parseLong(msgs[0]), msgs[1]);
             } else if (msg.contains(CHATROOM_MSG_DIVIDER)) {
                 String[] msgs = msg.split(CHATROOM_MSG_DIVIDER);

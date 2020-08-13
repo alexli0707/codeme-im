@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Date;
@@ -75,6 +76,10 @@ public class ImClient implements ImClientFunction {
         }
         String accessToken = tokenResponse.getData().getAccessToken();
         RestHttpResponse<String> imServerUrlResponse = apiServiceImpl.getIMServerUrl(accessToken);
+        if (null == imServerUrlResponse || StringUtils.isEmpty(imServerUrlResponse.getData())){
+            log.error("暂无imserver可以建立连接");
+            return false;
+        }
         String imServerUrl = imServerUrlResponse.getData();
         log.info("target imserverUrl:" + imServerUrl);
         String[] nettyParams = imServerUrl.split(":");
