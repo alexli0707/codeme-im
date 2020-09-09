@@ -18,6 +18,7 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * [x] 4.发送文本消息与指定单聊(`chapter4_p2p_chat`)
 * [x] 5.api建群,拉群以及群文本聊天(`chapter5_chatroom_chat`)
 * [x] 6.设计横向扩展,支持集群IM服务(`chapter6_distributed`)
+* [x] 7.使用google protocol减少通信包体(`chapter7_google_protocol`)
 
 
 ## Feature
