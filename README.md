@@ -27,7 +27,8 @@ netty & springboot2 搭建分布式IM应用. 从0到1,循序渐进.
 * [x] 3.客户端发送文本单聊,api建群,拉群以及群文本聊天.
 * [x] 4.后端单实例与多实例设计上的区别与实现.
 
-
+## 设计
+![alt](./doc/codeme-im-distribute.png)
 
 
 
