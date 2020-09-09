@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package googleprotocol;
+
+option java_package = "org.codeme.im.imcommon.model.vo";
+option java_outer_classname = "GoogleProtocolMsg";
+
+
+message ProtocolMsg {
+  required int32 cmdType = 1;
+  required int64 senderId = 2;
+  required int64 receiverId = 3;
+  required int64 chatroomId = 4;
+  required int32 protocolVersion = 5;
+  required int32 contentLength = 6;
+  required string msgContent = 7;
+}

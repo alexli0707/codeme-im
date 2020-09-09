@@ -11,6 +11,10 @@
 
     <artifactId>im-common</artifactId>
     <version>${im-common.version}</version>
+    <properties>
+        <java.version>11</java.version>
+        <dep.protobuf-java.version>3.12.4</dep.protobuf-java.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -46,6 +50,12 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>4.4.10</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${dep.protobuf-java.version}</version>
         </dependency>
     </dependencies>
 
